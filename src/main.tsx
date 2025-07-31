@@ -1,8 +1,8 @@
 import { StrictMode } from 'react'
 import { createRoot } from 'react-dom/client'
-import './index.css'
-import App from './App.tsx';
+import Home from './Home.tsx';
 import NotFound from './NotFound.tsx';
+import MainAppLayout from './layout.tsx';
 import {
 	createBrowserRouter,
 	RouterProvider,
@@ -39,9 +39,14 @@ export function ErrorBoundary() {
 
 const router = createBrowserRouter([
 	{
-		path: "/",
-		Component: App,
-		ErrorBoundary: ErrorBoundary
+		Component: MainAppLayout,
+		errorElement: (<MainAppLayout><ErrorBoundary /></MainAppLayout>),
+		children: [
+			{
+				index: true,
+				Component: Home,
+			},
+		]
 	}
 ]);
 
