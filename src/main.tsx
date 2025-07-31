@@ -1,7 +1,8 @@
 import { StrictMode } from 'react'
 import { createRoot } from 'react-dom/client'
 import './index.css'
-import App from './App.tsx'
+import App from './App.tsx';
+import NotFound from './NotFound.tsx';
 import {
 	createBrowserRouter,
 	RouterProvider,
@@ -12,11 +13,17 @@ import {
 export function ErrorBoundary() {
 	const error = useRouteError();
 	if (isRouteErrorResponse(error)) {
-		return (
-			<div>
-				Route error response
-			</div>
-		)
+		switch(error.status) {
+			case 404:
+				return <NotFound />;
+			default:
+				return (
+					<div>
+						<p>Error: {error.status}</p>
+						<p>{error.statusText}</p>
+					</div>
+				);
+		}
 	} else if (error instanceof Error) {
 		return (
 			<div>
@@ -41,5 +48,5 @@ const router = createBrowserRouter([
 createRoot(document.getElementById('root')!).render(
 	<StrictMode>
 		<RouterProvider router={router} />
-	</StrictMode>,
+	</StrictMode>
 )
