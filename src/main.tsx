@@ -27,7 +27,9 @@ export function ErrorBoundary() {
 	} else if (error instanceof Error) {
 		return (
 			<div>
-				Regular error response
+				<div>Regular error response</div>
+				<p>{error.message}</p>
+				<p>{error.stack}</p>
 			</div>
 		)
 	} else {
