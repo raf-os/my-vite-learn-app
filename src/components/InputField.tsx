@@ -1,4 +1,4 @@
-import { useImperativeHandle, useRef, forwardRef } from "react";
+import { useImperativeHandle, useRef } from "react";
 
 interface IInputFieldProps extends React.ComponentPropsWithoutRef<'input'> {
     ref: React.RefObject<unknown>;
