@@ -1,6 +1,7 @@
 import { StrictMode } from 'react'
 import { createRoot } from 'react-dom/client'
 import Home from './Home.tsx';
+import FormBehaviorOverridePage from '@/examples/form-submission-override/page.tsx';
 import NotFound from './NotFound.tsx';
 import MainAppLayout from './layout.tsx';
 import {
@@ -26,10 +27,16 @@ export function ErrorBoundary() {
 		}
 	} else if (error instanceof Error) {
 		return (
-			<div>
-				<div>Regular error response</div>
-				<p>{error.message}</p>
-				<p>{error.stack}</p>
+			<div className="flex flex-col gap-1 w-full md:w-[900px]">
+				<div className="text-xl font-bold text-red-400">
+					Error caught
+				</div>
+				<div className="font-medium">
+					{error.message}
+				</div>
+				<div className="px-4 py-3 bg-slate-200 rounded-box">
+					{error.stack}
+				</div>
 			</div>
 		)
 	} else {
@@ -42,12 +49,19 @@ export function ErrorBoundary() {
 const router = createBrowserRouter([
 	{
 		Component: MainAppLayout,
-		errorElement: (<MainAppLayout><ErrorBoundary /></MainAppLayout>),
+		errorElement: (
+			<MainAppLayout>
+				<ErrorBoundary />
+			</MainAppLayout>
+			),
 		children: [
 			{
 				index: true,
 				Component: Home,
-			},
+			}, {
+				path: "form-submission-override/",
+				Component: FormBehaviorOverridePage,
+			}
 		]
 	}
 ]);

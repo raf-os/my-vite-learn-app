@@ -1,0 +1,27 @@
+@import "tailwindcss";
+@import "./forms.css";
+@import "./typography.css";
+
+@font-face {
+    font-family: "Roboto";
+    src: url('/fonts/Roboto-VariableFont_wdth,wght.ttf');
+}
+
+@theme {
+    --radius-box: 6px;
+    --radius-field: 8px;
+}
+
+@layer base {
+    body {
+        font-family: Roboto;
+    }
+}
+
+@utility rounded-box {
+    border-radius: var(--radius-box);
+}
+
+@utility rounded-field {
+    border-radius: var(--radius-field);
+}

@@ -1,5 +1,4 @@
 import { useRef, createContext, useContext, useEffect, useImperativeHandle } from "react";
-import { cn } from "@lib/utils";
 
 interface IFormContext {
     registerRef: (ref: BaseFormElementRef) => void;
@@ -118,55 +117,3 @@ export function useFormElement() {
     }
 }
 
-export function Label({
-    children,
-    className,
-    ...rest
-}: React.ComponentPropsWithRef<'label'>) {
-    return (
-        <label
-        className={cn(
-            "text-sm font-bold",
-            className
-        )}
-            {...rest}
-        >
-            {children}
-        </label>
-    )
-}
-
-export function TestInputField({
-    label="No Label",
-    name,
-    className
-}: {
-    label?: string,
-    name: string,
-    className?: string,
-}) {
-    const {register} = useFormElement();
-    return (
-        <div
-            className="flex flex-col gap-0.5"
-        >
-            {label && (
-                <Label>
-                    {label}
-                </Label>
-            )}
-            <input
-                {...register({
-                    name: name,
-                    metadata: {
-                        label: label
-                    }
-                })}
-                className={cn(
-                    "border border-gray-700 text-gray-500 focus:text-neutral-900 outline-0 ring-offset-1 ring-blue-600 focus:ring-3 rounded-md px-1.5 py-1",
-                    className
-                )}
-            />
-        </div>
-    )
-}
