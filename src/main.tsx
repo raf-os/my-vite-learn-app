@@ -2,6 +2,7 @@ import { StrictMode } from 'react'
 import { createRoot } from 'react-dom/client'
 import Home from './Home.tsx';
 import FormBehaviorOverridePage from '@/examples/form-submission-override/page.tsx';
+import DragNDropPage from './examples/drag-n-drop/page.tsx';
 import NotFound from './NotFound.tsx';
 import MainAppLayout from './layout.tsx';
 import {
@@ -61,6 +62,9 @@ const router = createBrowserRouter([
 			}, {
 				path: "form-submission-override/",
 				Component: FormBehaviorOverridePage,
+			}, {
+				path: "drag-n-drop/",
+				Component: DragNDropPage
 			}
 		]
 	}
