@@ -1,8 +1,5 @@
 import { StrictMode } from 'react'
 import { createRoot } from 'react-dom/client'
-import Home from './Home.tsx';
-import FormBehaviorOverridePage from '@/examples/form-submission-override/page.tsx';
-import DragNDropPage from './examples/drag-n-drop/page.tsx';
 import NotFound from './NotFound.tsx';
 import MainAppLayout from './layout.tsx';
 import {
@@ -58,13 +55,22 @@ const router = createBrowserRouter([
 		children: [
 			{
 				index: true,
-				Component: Home,
+				lazy: async () => {
+					const Home = await import("@/Home.tsx");
+					return { Component: Home.default }
+				}
 			}, {
 				path: "form-submission-override/",
-				Component: FormBehaviorOverridePage,
+				lazy: async() => {
+					const FormOverridePage = await import("@/examples/form-submission-override/page.tsx");
+					return { Component: FormOverridePage.default }
+				}
 			}, {
 				path: "drag-n-drop/",
-				Component: DragNDropPage
+				lazy: async() => {
+					const DragNDropPage = await import("@/examples/drag-n-drop/page.tsx");
+					return { Component: DragNDropPage.default }
+				}
 			}
 		]
 	}
