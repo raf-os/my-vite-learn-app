@@ -44,6 +44,9 @@ export function ErrorBoundary() {
 	}
 }
 
+/**
+ * @todo MOVE ROUTING TO SEPARATE FILE
+ */
 const router = createBrowserRouter([
 	{
 		Component: MainAppLayout,
@@ -70,6 +73,12 @@ const router = createBrowserRouter([
 				lazy: async() => {
 					const DragNDropPage = await import("@/examples/drag-n-drop/page.tsx");
 					return { Component: DragNDropPage.default }
+				}
+			}, {
+				path: "node-coding-ui/",
+				lazy: async() => {
+					const NodeCodingUIPage = await import("@/examples/node-coding-gui");
+					return { Component: NodeCodingUIPage.default }
 				}
 			}
 		]
