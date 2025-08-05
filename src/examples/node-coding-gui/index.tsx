@@ -1,4 +1,5 @@
 import { DndContext } from "@dnd-kit/core";
+import { restrictToWindowEdges } from "@dnd-kit/modifiers";
 
 import BaseIOPresetDraggable from "./components/presets/BaseIOPresetDraggable";
 import AppSpaceState from "./components/AppSpaceState";
@@ -7,9 +8,13 @@ import AppSpaceState from "./components/AppSpaceState";
 
 export default function NodeBasedCodingPage() {
     return (
-        <DndContext>
+        <DndContext
+            modifiers={[
+                restrictToWindowEdges
+            ]}
+        >
             <div
-                className="w-full h-full flex grow-1 flex-nowrap px-4 pb-6 overflow-hidden"
+                className="w-full h-full flex grow-1 flex-nowrap px-4 pb-6"
             >
                 <LeftPanel />
                 <RightPanel />

@@ -1,6 +1,6 @@
 import { cn } from "@/lib/utils";
-import BaseDraggable, { BaseDraggableContext } from "../BaseDraggable";
-import { useContext } from "react";
+import BaseDraggable, { DraggableHandlerWrapper } from "../BaseDraggable";
+import { useDndMonitor } from "@dnd-kit/core";
 
 export interface IBaseIODraggableProps {
     uniqueID: string,
@@ -13,20 +13,18 @@ export default function BaseIOPresetDraggable({
     title,
     children,
 }: IBaseIODraggableProps) {
-    const listeners = useContext(BaseDraggableContext);
     const presetID = `PRESET-${uniqueID}`;
 
     return (
         <BaseDraggable
             uniqueID={presetID}
-            className="p-4 bg-amber-200"
+            className="p-4 bg-amber-200 rounded-box"
         >
-            <div
-                {...listeners}
-                className="font-semibold cursor-pointer"
+            <DraggableHandlerWrapper
+                className="font-semibold flex"
             >
                 { title }
-            </div>
+            </DraggableHandlerWrapper>
 
             <div>
                 { children }
