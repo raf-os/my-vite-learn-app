@@ -23,7 +23,7 @@ export default function Home() {
                 </Link>
 
                 <Link to="/node-coding-ui">
-                    Node-based Coding UI experiment
+                    Node-based Coding UI experiment (incomplete, abandoned)
                 </Link>
             </div>
         </div>

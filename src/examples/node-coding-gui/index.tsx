@@ -1,34 +1,55 @@
+import { createContext, useState } from "react";
+
 import { DndContext } from "@dnd-kit/core";
 import { restrictToWindowEdges } from "@dnd-kit/modifiers";
 
-import BaseIOPresetDraggable from "./components/presets/BaseIOPresetDraggable";
+import { TestDevNodePreset } from "./components/nodes/TestDevNode";
 import AppSpaceState from "./components/AppSpaceState";
 
 // PROBABLY easier to use Unity or other tools/libraries to achieve this...
 
+export type TAppContext = {
+    appendNode: (...args: any) => void,
+    detachNode: (...args: any) => void,
+}
+
+const defaultAppContext: TAppContext = {
+    appendNode: () => {},
+    detachNode: () => {}
+}
+
+export const AppContext = createContext<TAppContext>({
+    appendNode: () => {},
+    detachNode: () => {},
+});
+
 export default function NodeBasedCodingPage() {
+    const [ context, setContext ] = useState<TAppContext>(defaultAppContext);
+
     return (
         <DndContext
             modifiers={[
                 restrictToWindowEdges
             ]}
         >
-            <div
-                className="w-full h-full flex grow-1 flex-nowrap px-4 pb-6"
-            >
-                <LeftPanel />
-                <RightPanel />
-            </div>
+            <AppContext.Provider value={context}>
+                <div
+                    className="w-full h-full flex grow-1 flex-nowrap px-4 pb-6"
+                >
+                    <LeftPanel />
+                    <RightPanel ctxOverride={setContext} />
+                </div>
+            </AppContext.Provider>
         </DndContext>
     )
 }
 
-function RightPanel() {
+function RightPanel({ ctxOverride }: { ctxOverride: (props: TAppContext) => void }) {
     return (
         <div
-            className="grow-1 pl-2 flex flex-col"
+            className="grow-1 pl-2 flex flex-col relative"
         >
-            <AppSpaceState />
+            <AppSpaceState ctxOverride={ctxOverride} />
         </div>
     )
 }
@@ -54,11 +75,6 @@ function LeftPanel() {
 
 function TestNode() {
     return (
-        <BaseIOPresetDraggable
-            title="TEST NODE"
-            uniqueID="preset-testNode"
-        >
-            I be dragging
-        </BaseIOPresetDraggable>
+        <TestDevNodePreset />
     )
 }

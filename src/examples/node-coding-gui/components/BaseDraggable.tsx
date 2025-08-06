@@ -1,6 +1,6 @@
 import { useDraggable, type UseDraggableArguments } from "@dnd-kit/core";
 import { cn } from "@/lib/utils";
-import { createContext, useContext } from "react";
+import { createContext, useContext, useEffect, useRef } from "react";
 import { Grip } from "lucide-react";
 
 type IBaseDraggableContext = UseDraggableArguments;
@@ -17,14 +17,23 @@ export default function BaseDraggable({
     className,
     uniqueID,
     data,
+    ref,
     ...rest
 }: IBaseDraggableProps) {
     const draggableConfigs: UseDraggableArguments = {
         id: uniqueID,
         data: data,
     };
+    const internalRef = useRef<HTMLDivElement>(null);
 
     const { attributes, setNodeRef, transform } = useDraggable(draggableConfigs);
+
+    useEffect(() => {
+        if (internalRef.current) {
+            ref = internalRef;
+            setNodeRef(internalRef.current);
+        }
+    }, [internalRef]);
 
     const styleOverride = transform ? {
         transform: `translate3d(${transform.x}px, ${transform.y}px, 0)`,
@@ -32,7 +41,7 @@ export default function BaseDraggable({
 
     return (
         <div
-            ref={setNodeRef}
+            ref={internalRef}
             style={{
                 ...styleOverride
             }}
