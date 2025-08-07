@@ -1,6 +1,7 @@
 import { useRef, useEffect, useState } from "react";
 import { draggable } from "@atlaskit/pragmatic-drag-and-drop/element/adapter";
 import { type DragLocationHistory, type BaseEventPayload, type ElementDragType } from "@atlaskit/pragmatic-drag-and-drop/types";
+import { Coordinate } from "../types";
 import { cn } from "@/lib/utils";
 
 export interface INodePrimitive extends React.ComponentPropsWithoutRef<'div'> {
@@ -38,7 +39,17 @@ export default function NodePrimitive({
             return draggable({
                 element: element,
                 getInitialData: () => ({ type: "preset" }),
-                onDragStart: () => setIsDragging(true),
+                onDragStart: (payload) => {
+                    setIsDragging(true);
+                    const iRect = ref.current?.getBoundingClientRect();
+                    const rectPos = new Coordinate(iRect?.x, iRect?.y);
+
+                    const inputData = payload.location.initial.input;
+                    const initialDragLocation = new Coordinate(inputData.pageX, inputData.pageY);
+                    const delta = initialDragLocation.subtract(rectPos);
+
+                    console.log("Delta: ", delta.getLocation());
+                },
                 onDrop: (payload) => {
                     const { location } = payload;
                     setIsDragging(false);
