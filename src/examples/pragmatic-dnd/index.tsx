@@ -1,6 +1,8 @@
 import { useRef, useEffect, useState } from "react";
 import { draggable, dropTargetForElements } from "@atlaskit/pragmatic-drag-and-drop/element/adapter";
 import NodePrimitive from "./components/NodePrimitive";
+import { TAppLayers } from "./types";
+import { configBlockData } from "./utils";
 
 export default function PragmaticDNDTestPage() {
     return (
@@ -35,6 +37,10 @@ export default function PragmaticDNDTestPage() {
 
 function NodeListPanel() {
     const ref = useRef<HTMLDivElement>(null);
+    const blockData = configBlockData({
+        type: "node-panel",
+        layer: TAppLayers.Panel
+    });
 
     useEffect(() => {
         if (ref.current) {
@@ -42,7 +48,7 @@ function NodeListPanel() {
 
             return dropTargetForElements({
                 element: el,
-                getData: () => ({ type: "node-panel" }),
+                getData: () => (blockData),
             });
         }
     })
@@ -83,13 +89,18 @@ function NodeSpaceWrapper({
     const ref = useRef<HTMLDivElement>(null);
     const [ isOver, setIsOver ] = useState(false);
 
+    const blockData = configBlockData({
+        type: "node-space",
+        layer: TAppLayers.Space
+    });
+
     useEffect(() => {
         if (ref.current) {
             const el = ref.current;
 
             return dropTargetForElements({
                 element: el,
-                getData: () => ({ type: "node-space" }),
+                getData: () => (blockData),
                 onDropTargetChange: (payload) => {
                     if (payload.location.current.dropTargets.at(0)?.element === payload.self.element) {
                         setIsOver(true);

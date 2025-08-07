@@ -3,6 +3,11 @@ type TCoord = {
     y: number,
 }
 
+export const TAppLayers = {
+    Space: 1 << 0,
+    Panel: 1 << 1,
+}
+
 export class Coordinate {
     private _myPos: TCoord;
 
@@ -25,7 +30,7 @@ export class Coordinate {
         return this._myPos;
     }
 
-    add(c2: InstanceType<typeof Coordinate>) {
+    add(c2: Coordinate) {
         if (c2 instanceof Coordinate) {
             return new Coordinate(
                 this._myPos.x + c2.x,
@@ -34,13 +39,17 @@ export class Coordinate {
         } else return this;
     }
 
-    subtract(c2: InstanceType<typeof Coordinate>) {
+    subtract(c2: Coordinate) {
         if (c2 instanceof Coordinate) {
             return new Coordinate(
                 this._myPos.x - c2.x,
                 this._myPos.y - c2.y
             );
         } else return this;
+    }
+
+    equals(c2: Coordinate) {
+        return (this._myPos.x === c2.x && this._myPos.y === c2.y);
     }
 
     valueOf() {
