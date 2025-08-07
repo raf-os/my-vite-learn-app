@@ -1,5 +1,6 @@
 import { useRef, useEffect, useState } from "react";
 import { draggable, dropTargetForElements } from "@atlaskit/pragmatic-drag-and-drop/element/adapter";
+import NodePrimitive from "./components/NodePrimitive";
 
 export default function PragmaticDNDTestPage() {
     return (
@@ -28,49 +29,6 @@ export default function PragmaticDNDTestPage() {
                     </NodeSpaceWrapper>
                 </div>
             </div>
-        </div>
-    )
-}
-
-interface IBaseNodePreset extends React.ComponentPropsWithoutRef<'div'> {}
-
-function BaseNodePreset({
-    children,
-    style,
-    ...rest
-}: IBaseNodePreset) {
-    const ref = useRef<HTMLDivElement>(null);
-    const [ isDragging, setIsDragging ] = useState<boolean>(false);
-
-    const styleOverride = {
-        ...style,
-        opacity: isDragging?"50%":"100%"
-    }
-
-    useEffect(() => {
-        if (ref.current) {
-            const element = ref.current;
-
-            return draggable({
-                element: element,
-                getInitialData: () => ({ type: "preset" }),
-                onDragStart: () => setIsDragging(true),
-                onDrop: ({ location }) => {
-                    setIsDragging(false);
-                    console.log(location.current.dropTargets);
-                },
-            });
-        }
-    }, []);
-
-    return (
-        <div
-            className="bg-amber-300 rounded-box p-2"
-            style={styleOverride}
-            ref={ref}
-            {...rest}
-        >
-            { children }
         </div>
     )
 }
@@ -104,9 +62,12 @@ function NodeListPanel() {
                 className="bg-neutral-200 rounded-box grow-1 shrink-1 h-full p-2 overflow-hidden"
                 data-slot="node-preset-list"
             >
-                <BaseNodePreset>
+                <NodePrimitive
+                    onSpaceDrop={() => console.log("dropped on node space")}
+                    onPanelDrop={() => console.log("dropped on panel")}
+                >
                     test node
-                </BaseNodePreset>
+                </NodePrimitive>
             </div>
         </div>
     )
@@ -129,8 +90,13 @@ function NodeSpaceWrapper({
             return dropTargetForElements({
                 element: el,
                 getData: () => ({ type: "node-space" }),
-                onDragEnter: () => setIsOver(true),
-                onDragLeave: () => setIsOver(false),
+                onDropTargetChange: (payload) => {
+                    if (payload.location.current.dropTargets.at(0)?.element === payload.self.element) {
+                        setIsOver(true);
+                    } else {
+                        setIsOver(false);
+                    }
+                },
                 onDrop: () => setIsOver(false),
             });
         }
@@ -139,7 +105,6 @@ function NodeSpaceWrapper({
     return (
         <div
             className="w-full h-full"
-            
             ref={ref}
             {...rest}
         >
