@@ -1,4 +1,4 @@
-import { useDroppable } from "@dnd-kit/core";
+import { useDroppable } from "@dnd-kit/react";
 import { cn } from "@/lib/utils";
 
 export interface IBaseDroppableProps extends React.ComponentPropsWithRef<'div'> {
@@ -12,14 +12,14 @@ export default function BaseDroppable({
     children,
     data
 }: IBaseDroppableProps) {
-    const { setNodeRef } = useDroppable({
+    const droppable = useDroppable({
         id: uniqueID,
         data: data
     });
 
     return (
         <div
-            ref={setNodeRef}
+            ref={droppable.ref}
             className={cn(
                 "",
                 className

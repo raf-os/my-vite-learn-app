@@ -1,5 +1,5 @@
 import BaseDroppable from "./BaseDroppable";
-import { AppContext, type TAppContext } from "..";
+import { type TAppContext } from "..";
 import { useState, useEffect, cloneElement } from "react";
 import { type IBaseIONodeProps } from "./presets/BaseIONode";
 

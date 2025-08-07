@@ -25,3 +25,10 @@
 @utility rounded-field {
     border-radius: var(--radius-field);
 }
+
+@layer components {
+    .grid-bg {
+        background: url("/grid3.png");
+        box-shadow: 0 0 12px 4px rgb(0 0 0 / 25%) inset;
+    }
+}

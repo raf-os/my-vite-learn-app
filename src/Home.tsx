@@ -25,6 +25,10 @@ export default function Home() {
                 <Link to="/node-coding-ui">
                     Node-based Coding UI experiment (incomplete, abandoned)
                 </Link>
+
+                <Link to="/pragmatic-dnd">
+                    Drag n drop, using pragmatic dnd instead
+                </Link>
             </div>
         </div>
     )

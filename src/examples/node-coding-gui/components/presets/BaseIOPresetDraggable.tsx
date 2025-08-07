@@ -1,7 +1,6 @@
-import { cn } from "@/lib/utils";
-import { useDndMonitor } from "@dnd-kit/core";
 import BaseDraggable, { DraggableHandlerWrapper, type IBaseDraggableProps } from "../BaseDraggable";
 import { type IBaseIONodeProps } from "./BaseIONode";
+import { useDragDropMonitor } from "@dnd-kit/react";
 import { useContext } from "react";
 import { AppContext } from "../..";
 
@@ -26,20 +25,15 @@ export default function BaseIOPresetDraggable({
         ...data
     }
 
-    const { appendNode } = useContext(AppContext);
+    //const { appendNode } = useContext(AppContext);
 
-    useDndMonitor({
-        onDragEnd(event) {
-            // this is a pain in the ass
-            if (event.active.id === presetID && event.over?.data.current?.ctx === "app") {
+    useDragDropMonitor({ // The app screams about not being within a DragDropProvider, but it definitely is
+        onDragEnd(event) { // The lack of documentation is astounding. Yes this is the experimental branch but it was the same with @dnd-kit/core
+            if (event.operation.source?.id === uniqueID && event.operation.target?.data.ctx === "app") {
+                // valid
                 console.log(event);
-                const coords = {
-                    x: event.delta.x - event.over.rect.left,
-                    y: event.delta.y - event.over.rect.top,
-                }
-                appendNode(spawnNode(), { coords: coords });
             }
-        },
+        }
     });
 
     return (

@@ -80,6 +80,12 @@ const router = createBrowserRouter([
 					const NodeCodingUIPage = await import("@/examples/node-coding-gui");
 					return { Component: NodeCodingUIPage.default }
 				}
+			}, {
+				path: "pragmatic-dnd/",
+				lazy: async() => {
+					const PragmaticDNDPage = await import("@/examples/pragmatic-dnd");
+					return { Component: PragmaticDNDPage.default }
+				}
 			}
 		]
 	}

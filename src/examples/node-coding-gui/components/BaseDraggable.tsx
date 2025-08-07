@@ -1,16 +1,15 @@
-import { useDraggable, type UseDraggableArguments } from "@dnd-kit/core";
+import { useDraggable, type UseDraggableInput } from "@dnd-kit/react";
 import { cn } from "@/lib/utils";
 import { createContext, useContext, useEffect, useRef } from "react";
 import { Grip } from "lucide-react";
-
-type IBaseDraggableContext = UseDraggableArguments;
-
-export const BaseDraggableContext = createContext<IBaseDraggableContext>({ id: "%%%ERROR%%% "});
 
 export interface IBaseDraggableProps extends React.ComponentPropsWithRef<'div'> {
     uniqueID: string,
     data?: Record<string, any>,
 }
+
+type TBaseDraggableContext = UseDraggableInput;
+const BaseDraggableContext = createContext<TBaseDraggableContext>({id:"%%ERROR%%"});
 
 export default function BaseDraggable({
     children,
@@ -20,42 +19,34 @@ export default function BaseDraggable({
     ref,
     ...rest
 }: IBaseDraggableProps) {
-    const draggableConfigs: UseDraggableArguments = {
+    const draggableConfigs: UseDraggableInput = {
         id: uniqueID,
         data: data,
     };
     const internalRef = useRef<HTMLDivElement>(null);
 
-    const { attributes, setNodeRef, transform } = useDraggable(draggableConfigs);
+    const { ref: draggableRef } = useDraggable(draggableConfigs);
 
     useEffect(() => {
         if (internalRef.current) {
             ref = internalRef;
-            setNodeRef(internalRef.current);
+            draggableRef(internalRef.current);
         }
     }, [internalRef]);
 
-    const styleOverride = transform ? {
-        transform: `translate3d(${transform.x}px, ${transform.y}px, 0)`,
-    } : undefined;
-
     return (
-        <div
-            ref={internalRef}
-            style={{
-                ...styleOverride
-            }}
-            className={cn(
-                "flex flex-col",
-                className
-            )}
-            {...attributes}
-            {...rest}
-        >
-            <BaseDraggableContext value={draggableConfigs}>
+        <BaseDraggableContext.Provider value={draggableConfigs}>
+            <div
+                ref={internalRef}
+                className={cn(
+                    "flex flex-col",
+                    className
+                )}
+                {...rest}
+            >
                 { children }
-            </BaseDraggableContext>
-        </div>
+            </div>
+        </BaseDraggableContext.Provider>
     )
 }
 
@@ -70,11 +61,11 @@ export function DraggableHandlerWrapper({
     ...rest
 }: IDraggableHandlerWrapperProps) {
     const dragConfig = useContext(BaseDraggableContext);
-    const { listeners } = useDraggable(dragConfig);
+    const { handleRef } = useDraggable(dragConfig);
 
     return (
         <div
-            {...listeners}
+            ref={handleRef}
             data-slot="draggable-handle"
             className={cn(
                 "select-none cursor-pointer",

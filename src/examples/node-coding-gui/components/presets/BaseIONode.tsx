@@ -1,5 +1,4 @@
 import BaseDraggable, { type IBaseDraggableProps, DraggableHandlerWrapper } from "../BaseDraggable";
-import { useDndMonitor } from "@dnd-kit/core";
 import { useState } from "react";
 import { v4 as uuid } from "uuid";
 import { cn } from "@/lib/utils";

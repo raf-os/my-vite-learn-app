@@ -1,7 +1,6 @@
 import { createContext, useState } from "react";
 
-import { DndContext } from "@dnd-kit/core";
-import { restrictToWindowEdges } from "@dnd-kit/modifiers";
+import { DragDropProvider } from "@dnd-kit/react";
 
 import { TestDevNodePreset } from "./components/nodes/TestDevNode";
 import AppSpaceState from "./components/AppSpaceState";
@@ -27,11 +26,7 @@ export default function NodeBasedCodingPage() {
     const [ context, setContext ] = useState<TAppContext>(defaultAppContext);
 
     return (
-        <DndContext
-            modifiers={[
-                restrictToWindowEdges
-            ]}
-        >
+        <DragDropProvider>
             <AppContext.Provider value={context}>
                 <div
                     className="w-full h-full flex grow-1 flex-nowrap px-4 pb-6"
@@ -40,7 +35,7 @@ export default function NodeBasedCodingPage() {
                     <RightPanel ctxOverride={setContext} />
                 </div>
             </AppContext.Provider>
-        </DndContext>
+        </DragDropProvider>
     )
 }
 
