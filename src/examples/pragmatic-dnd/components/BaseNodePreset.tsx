@@ -4,6 +4,8 @@ import { Grip } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useRef, useContext } from "react";
 import { AppContext } from "..";
+import { TAppLayers } from "../types";
+import { configBlockData } from "../utils";
 
 export interface IBaseNodePreset extends INodePrimitive {
     header: React.ReactNode,
@@ -17,10 +19,17 @@ export default function BaseNodePreset({
     handleStyle,
     header,
     nodeSpawn,
+    blockData,
     ...rest
 }: IBaseNodePreset) {
     const handleRef = useRef<HTMLDivElement>(null);
     const { appendNodeBlock } = useContext(AppContext);
+
+    const myData = configBlockData({
+        type: "preset-block",
+        layer: TAppLayers.Panel,
+        ...blockData
+    });
 
     const spawnNode: INodePrimitive['onPanelDrop'] = ({}, pos) => {
         const data = pos.find((item) => item.data['type'] === "node-space");
@@ -39,6 +48,7 @@ export default function BaseNodePreset({
             )}
             handleRef={handleRef}
             onSpaceDrop={spawnNode}
+            blockData={myData}
             {...rest}
         >
             <div

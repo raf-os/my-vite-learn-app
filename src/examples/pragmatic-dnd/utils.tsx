@@ -9,12 +9,12 @@ export function isDropTargetValid(locationData: DragLocationHistory, layerCheck:
     return target?.data['layer'] === layerCheck;
 }
 
-export interface IBlockData {
+export type IBlockData = {
     type: string,
     layer: number,
-}
+} & Record<string, any>;
 
-export function configBlockData(data: IBlockData & Record<string, any>) {
+export function configBlockData(data: IBlockData) {
     const compiledData = {
         ...data,
     }

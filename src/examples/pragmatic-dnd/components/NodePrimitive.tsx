@@ -2,7 +2,7 @@ import { useRef, useEffect, useState } from "react";
 import { draggable } from "@atlaskit/pragmatic-drag-and-drop/element/adapter";
 import { type BaseEventPayload, type ElementDragType } from "@atlaskit/pragmatic-drag-and-drop/types";
 import { Coordinate, TAppLayers } from "../types";
-import { isDropTargetValid, configBlockData } from "../utils";
+import { isDropTargetValid, configBlockData, type IBlockData } from "../utils";
 import { cn } from "@/lib/utils";
 
 type EventPayloadWithDelta = BaseEventPayload<ElementDragType> & {
@@ -21,6 +21,7 @@ export interface INodePrimitive extends React.ComponentPropsWithoutRef<'div'> {
     inputs?: any,
     outputs?: any,
     handleRef?: React.RefObject<HTMLDivElement | null>,
+    blockData?: IBlockData
 }
 
 export default function NodePrimitive({
@@ -30,13 +31,14 @@ export default function NodePrimitive({
     onPanelDrop,
     onSpaceDrop,
     handleRef,
+    blockData,
     ...rest
 }: INodePrimitive) {
     const ref = useRef<HTMLDivElement>(null);
     const dragDelta = useRef<Coordinate>(new Coordinate());
     const [ isDragging, setIsDragging ] = useState<boolean>(false);
 
-    const blockData = configBlockData({
+    const myBlockData = blockData ? blockData : configBlockData({
         type: "preset-block",
         layer: TAppLayers.Space
     });
@@ -53,7 +55,7 @@ export default function NodePrimitive({
             return draggable({
                 element: element,
                 dragHandle: (handleRef && handleRef.current!==null) ? handleRef.current : element,
-                getInitialData: () => (blockData),
+                getInitialData: () => (myBlockData),
                 onDragStart: (payload) => {
                     setIsDragging(true);
                     const iRect = ref.current?.getBoundingClientRect();
@@ -97,7 +99,7 @@ export default function NodePrimitive({
         <div
             className={cn(
                 "",
-                className?className:"bg-amber-200 rounded-box p-2"
+                className
             )}
             style={styleOverride}
             ref={ref}

@@ -1,8 +1,10 @@
 import NodePrimitive, { type INodePrimitive } from "./NodePrimitive";
+import BaseIONode from "./BaseIONode";
 import { useRef, useState } from "react";
 import { Grip } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { Coordinate } from "../types";
+import { Coordinate, TAppLayers } from "../types";
+import { configBlockData } from "../utils";
 
 export interface IBaseNode extends INodePrimitive {
     header: React.ReactNode,
@@ -15,6 +17,7 @@ export default function BaseNode({
     className,
     header,
     style,
+    blockData,
     posX = 0,
     posY = 0,
     ...rest
@@ -22,11 +25,17 @@ export default function BaseNode({
     const handleRef = useRef<HTMLDivElement>(null);
     const [ myPos, setMyPos ] = useState<Coordinate>(new Coordinate(posX, posY));
 
+    const myData = configBlockData({
+        type: "node-block",
+        layer: TAppLayers.Space,
+        ...blockData
+    });
+
     const _style = {
         ...style,
         left: myPos.x,
         top: myPos.y,
-    }
+    };
 
     const onSpaceDrop: INodePrimitive['onSpaceDrop'] = ({delta}, relativePos) => {
         const relative = relativePos.find(item => item.data['type'] === "node-space");
@@ -46,6 +55,7 @@ export default function BaseNode({
             handleRef={handleRef}
             style={_style}
             onSpaceDrop={onSpaceDrop}
+            blockData={myData}
             {...rest}
         >
             <div
@@ -66,6 +76,18 @@ export default function BaseNode({
                 className="p-1"
             >
                 { children }
+            </div>
+
+            <div
+                className="flex flex-col"
+                data-slot="node-block-IO"
+            >
+                <div
+                    className="text-sm font-bold px-1.5 select-none"
+                >
+                    I/O nodes
+                </div>
+                <BaseIONode type="output" />
             </div>
         </NodePrimitive>
     )
