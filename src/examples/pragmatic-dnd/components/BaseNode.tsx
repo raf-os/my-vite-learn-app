@@ -87,7 +87,8 @@ export default function BaseNode({
                 >
                     I/O nodes
                 </div>
-                <BaseIONode type="output" />
+                <BaseIONode type="input" label="input" />
+                <BaseIONode type="output" label="yes" />
             </div>
         </NodePrimitive>
     )

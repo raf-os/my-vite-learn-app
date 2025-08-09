@@ -8,6 +8,21 @@ export const TAppLayers = {
     Panel: 1 << 1,
 }
 
+export const IODataTypes: Record<string, string> = {
+    String: 'string',
+    Number: 'number',
+    Boolean: 'boolean',
+}
+
+type ExtractValues<T extends Record<string, string>> = T[keyof T];
+
+export type TIOConfig = {
+    type: "input" | "output",
+    label?: React.ReactNode,
+    dataType: ExtractValues<typeof IODataTypes>,
+    accepts: ExtractValues<typeof IODataTypes>
+}
+
 export class Coordinate {
     private _myPos: TCoord;
 
