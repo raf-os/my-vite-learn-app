@@ -9,9 +9,18 @@ type EventPayloadWithDelta = BaseEventPayload<ElementDragType> & {
     delta: Coordinate,
 }
 
+export type EventRelativePayload = {
+    index: number,
+    pos: { x: number, y: number },
+    data: Record<string, any>
+}[];
+
 export interface INodePrimitive extends React.ComponentPropsWithoutRef<'div'> {
-    onPanelDrop?: (payload: EventPayloadWithDelta) => void,
-    onSpaceDrop?: (payload: EventPayloadWithDelta) => void,
+    onPanelDrop?: (payload: EventPayloadWithDelta, relativePos: EventRelativePayload) => void,
+    onSpaceDrop?: (payload: EventPayloadWithDelta, relativePos: EventRelativePayload) => void,
+    inputs?: any,
+    outputs?: any,
+    handleRef?: React.RefObject<HTMLDivElement | null>,
 }
 
 export default function NodePrimitive({
@@ -20,6 +29,7 @@ export default function NodePrimitive({
     className,
     onPanelDrop,
     onSpaceDrop,
+    handleRef,
     ...rest
 }: INodePrimitive) {
     const ref = useRef<HTMLDivElement>(null);
@@ -29,7 +39,7 @@ export default function NodePrimitive({
     const blockData = configBlockData({
         type: "preset-block",
         layer: TAppLayers.Space
-    })
+    });
 
     const styleOverride = {
         ...style,
@@ -42,6 +52,7 @@ export default function NodePrimitive({
 
             return draggable({
                 element: element,
+                dragHandle: (handleRef && handleRef.current!==null) ? handleRef.current : element,
                 getInitialData: () => (blockData),
                 onDragStart: (payload) => {
                     setIsDragging(true);
@@ -60,11 +71,22 @@ export default function NodePrimitive({
                         ...payload,
                         delta: dragDelta.current,
                     }
+                    const relativePositions: EventRelativePayload = payload.location.current.dropTargets.map((target, idx) => {
+                        const { x: rx, y: ry } = target.element.getBoundingClientRect();
+                        const myPos = new Coordinate(rx, ry);
+                        const { pageX: px, pageY: py } = payload.location.current.input;
+                        const posDiff = (new Coordinate(px, py)).subtract(myPos);
+                        return {
+                            index: idx,
+                            pos: posDiff.getLocation(),
+                            data: target.data
+                        }
+                    });
                     setIsDragging(false);
                     if (isDropTargetValid(location, TAppLayers.Panel)) {
-                        onPanelDrop!(newPayload);
+                        onPanelDrop?.(newPayload, relativePositions);
                     } else if (isDropTargetValid(location, TAppLayers.Space)) {
-                        onSpaceDrop!(newPayload);
+                        onSpaceDrop?.(newPayload, relativePositions);
                     }
                 },
             });

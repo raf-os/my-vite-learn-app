@@ -1,8 +1,23 @@
-import { useRef, useEffect, useState } from "react";
-import { draggable, dropTargetForElements } from "@atlaskit/pragmatic-drag-and-drop/element/adapter";
-import NodePrimitive from "./components/NodePrimitive";
+import { useRef, useEffect, useState, createContext, cloneElement } from "react";
+import { dropTargetForElements } from "@atlaskit/pragmatic-drag-and-drop/element/adapter";
+import { type IBaseNode } from "./components/BaseNode";
 import { TAppLayers } from "./types";
 import { configBlockData } from "./utils";
+import { v4 as uuid } from "uuid";
+
+import TestNode from "./components/nodes/TestNode";
+
+type TAppContext = {
+    appendNodeBlock: (...arg: any) => void,
+    detachNodeBlock: (...arg: any) => void,
+}
+
+const defaultAppContext: TAppContext = {
+    appendNodeBlock: () => {},
+    detachNodeBlock: () => {},
+}
+
+export const AppContext = createContext<TAppContext>(defaultAppContext);
 
 export default function PragmaticDNDTestPage() {
     return (
@@ -24,7 +39,7 @@ export default function PragmaticDNDTestPage() {
                 >
                     <NodeSpaceWrapper>
                         <div
-                            className="absolute left-0 top-0 flex p-4 w-full h-full justify-end"
+                            className="absolute right-0 top-0 flex p-4 w-1/4 min-h-[128px] h-full justify-end"
                         >
                             <NodeListPanel />
                         </div>
@@ -55,7 +70,7 @@ function NodeListPanel() {
 
     return (
         <div
-            className="top-4 right-4 w-1/4 min-h-[128px] h-full p-2 bg-neutral-100 rounded-box flex flex-col gap-4"
+            className="grow-0 shrink-0 top-4 right-4 w-full h-full p-2 bg-neutral-100 rounded-box flex flex-col gap-4"
             ref={ref}
         >
             <div
@@ -68,12 +83,7 @@ function NodeListPanel() {
                 className="bg-neutral-200 rounded-box grow-1 shrink-1 h-full p-2 overflow-hidden"
                 data-slot="node-preset-list"
             >
-                <NodePrimitive
-                    onSpaceDrop={() => console.log("dropped on node space")}
-                    onPanelDrop={() => console.log("dropped on panel")}
-                >
-                    test node
-                </NodePrimitive>
+                <TestNode />
             </div>
         </div>
     )
@@ -88,11 +98,31 @@ function NodeSpaceWrapper({
 }: INodeSpaceWrapperProps) {
     const ref = useRef<HTMLDivElement>(null);
     const [ isOver, setIsOver ] = useState(false);
+    const [ spaceState, setSpaceState ] = useState<React.ReactElement<IBaseNode>[]>([]);
 
     const blockData = configBlockData({
         type: "node-space",
         layer: TAppLayers.Space
     });
+
+    const appendNodeBlock = (node: React.ReactElement<IBaseNode>, posX: number, posY: number) => {
+        const nodeID = uuid();
+        const newNode = cloneElement(node,
+            {
+                key: `node-block(id:${nodeID})`,
+                posX: posX,
+                posY: posY,
+            }
+        )
+        setSpaceState(prev => [...prev, newNode]);
+    };
+
+    const detachNodeBlock = () => {};
+
+    const ctx: TAppContext = {
+        appendNodeBlock,
+        detachNodeBlock
+    }
 
     useEffect(() => {
         if (ref.current) {
@@ -114,21 +144,28 @@ function NodeSpaceWrapper({
     }, []);
 
     return (
-        <div
-            className="w-full h-full"
-            ref={ref}
-            {...rest}
-        >
+        <AppContext.Provider value={ctx}>
             <div
-                style={{
-                    opacity: "25%",
-                    backgroundColor: isOver?"green":"red",
-                    height: "100%"
-                }}
+                className="w-full h-full relative"
+                ref={ref}
+                {...rest}
             >
-                Drop target
+                <div
+                    style={{
+                        opacity: "25%",
+                        backgroundColor: isOver?"green":"red",
+                    }}
+                    className="absolute top-0 left-0 w-full h-full"
+                >
+                    Drop target
+                </div>
+                <div
+                    className="relative w-full h-full"
+                >
+                    { spaceState }
+                </div>
+                { children }
             </div>
-            { children }
-        </div>
+        </AppContext.Provider>
     )
 }
