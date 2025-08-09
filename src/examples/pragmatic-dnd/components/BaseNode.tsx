@@ -28,6 +28,15 @@ export default function BaseNode({
         top: myPos.y,
     }
 
+    const onSpaceDrop: INodePrimitive['onSpaceDrop'] = ({delta}, relativePos) => {
+        const relative = relativePos.find(item => item.data['type'] === "node-space");
+        const newPos = new Coordinate(
+            (relative?.pos.x || 0) - delta.x,
+            (relative?.pos.y || 0) - delta.y
+        );
+        setMyPos(newPos);
+    }
+
     return (
         <NodePrimitive
             className={cn(
@@ -36,15 +45,16 @@ export default function BaseNode({
             )}
             handleRef={handleRef}
             style={_style}
+            onSpaceDrop={onSpaceDrop}
             {...rest}
         >
             <div
                 data-slot="node-block-header"
-                className="flex items-center font-medium gap-1 p-2 bg-slate-500 text-neutral-50"
+                className="flex items-center font-medium gap-1 p-2 bg-slate-500 text-neutral-50 cursor-pointer"
                 ref={handleRef}
             >
                 <div
-                    className=""
+                    className="grow-0 shrink-0"
                 >
                     <Grip size={20} />
                 </div>

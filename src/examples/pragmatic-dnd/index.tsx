@@ -131,13 +131,6 @@ function NodeSpaceWrapper({
             return dropTargetForElements({
                 element: el,
                 getData: () => (blockData),
-                onDropTargetChange: (payload) => {
-                    if (payload.location.current.dropTargets.at(0)?.element === payload.self.element) {
-                        setIsOver(true);
-                    } else {
-                        setIsOver(false);
-                    }
-                },
                 onDrop: () => setIsOver(false),
             });
         }
@@ -150,15 +143,6 @@ function NodeSpaceWrapper({
                 ref={ref}
                 {...rest}
             >
-                <div
-                    style={{
-                        opacity: "25%",
-                        backgroundColor: isOver?"green":"red",
-                    }}
-                    className="absolute top-0 left-0 w-full h-full"
-                >
-                    Drop target
-                </div>
                 <div
                     className="relative w-full h-full"
                 >
