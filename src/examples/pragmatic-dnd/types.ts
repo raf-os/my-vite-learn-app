@@ -14,6 +14,9 @@ export const IODataTypes: Record<string, string> = {
     Boolean: 'boolean',
 }
 
+/**
+ * Given a type T that's made up of string: string pairs, gets all the values of each pair, that is, the second string in that pairing.
+ */
 type ExtractValues<T extends Record<string, string>> = T[keyof T];
 
 export type TIOConfig = {

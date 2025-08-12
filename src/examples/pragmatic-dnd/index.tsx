@@ -114,7 +114,7 @@ function NodeSpaceWrapper({
                 posY: posY,
             }
         )
-        setSpaceState(prev => [...prev, newNode]);
+        setSpaceState(prev => [...prev, newNode]); // TODO: Investigate why this was necessary to work
     };
 
     const detachNodeBlock = () => {};
@@ -140,6 +140,7 @@ function NodeSpaceWrapper({
         <AppContext.Provider value={ctx}>
             <div
                 className="w-full h-full relative"
+                id="node-space-portal"
                 ref={ref}
                 {...rest}
             >

@@ -15,9 +15,13 @@ export type EventRelativePayload = {
     data: Record<string, any>
 }[];
 
-export interface INodePrimitive extends React.ComponentPropsWithoutRef<'div'> {
+export interface INodePrimitive extends Omit<React.ComponentPropsWithoutRef<'div'>, "onDragStart" | "onDrop" | "onDrag"> {
     onPanelDrop?: (payload: EventPayloadWithDelta, relativePos: EventRelativePayload) => void,
     onSpaceDrop?: (payload: EventPayloadWithDelta, relativePos: EventRelativePayload) => void,
+    onDragStart?: (payload: EventPayloadWithDelta) => void,
+    onDrop?: (payload: EventPayloadWithDelta) => void,
+    onDrag?: (payload: EventPayloadWithDelta) => void,
+    fnOverride?: Partial<Parameters<typeof draggable>[0]>,
     inputs?: any,
     outputs?: any,
     handleRef?: React.RefObject<HTMLDivElement | null>,
@@ -30,6 +34,10 @@ export default function NodePrimitive({
     className,
     onPanelDrop,
     onSpaceDrop,
+    onDragStart,
+    onDrop,
+    onDrag,
+    fnOverride,
     handleRef,
     blockData,
     ...rest
@@ -66,6 +74,10 @@ export default function NodePrimitive({
                     const delta = initialDragLocation.subtract(rectPos);
 
                     dragDelta.current = delta;
+                    onDragStart?.({
+                        ...payload,
+                        delta: delta
+                    });
                 },
                 onDrop: (payload) => {
                     const { location } = payload;
@@ -84,6 +96,7 @@ export default function NodePrimitive({
                             data: target.data
                         }
                     });
+                    onDrop?.(newPayload);
                     setIsDragging(false);
                     if (isDropTargetValid(location, TAppLayers.Panel)) {
                         onPanelDrop?.(newPayload, relativePositions);
@@ -91,6 +104,15 @@ export default function NodePrimitive({
                         onSpaceDrop?.(newPayload, relativePositions);
                     }
                 },
+                onDrag: (payload) => {
+                    if (onDrag) {
+                        onDrag({
+                            ...payload,
+                            delta: dragDelta.current,
+                        });
+                    }
+                },
+                ...fnOverride
             });
         }
     }, []);
