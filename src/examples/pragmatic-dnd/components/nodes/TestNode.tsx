@@ -1,5 +1,5 @@
 import BaseNodePreset from "../BaseNodePreset";
-import BaseNode, { type IBaseNode } from "../BaseNode";
+import BaseNode from "../BaseNode";
 
 export default function TestNodePreset() {
     return (
@@ -17,6 +17,18 @@ export const TestNode: React.FC = (props) => {
         <BaseNode
             {...props}
             header="Test Node"
+            inputs={[
+                {
+                    label: 'input'
+                },
+            ]}
+            outputs={[
+                {
+                    label: 'Yes'
+                }, {
+                    label: 'No'
+                },
+            ]}
         >
             test node
         </BaseNode>

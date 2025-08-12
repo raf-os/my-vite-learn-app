@@ -1,7 +1,7 @@
 import { useRef, useEffect, useState, createContext, cloneElement } from "react";
 import { dropTargetForElements } from "@atlaskit/pragmatic-drag-and-drop/element/adapter";
 import { type IBaseNode } from "./components/BaseNode";
-import { TAppLayers } from "./types";
+import { TAppLayers, NodeDragLine, type CoordArray } from "./types";
 import { configBlockData } from "./utils";
 import { v4 as uuid } from "uuid";
 
@@ -10,11 +10,15 @@ import TestNode from "./components/nodes/TestNode";
 type TAppContext = {
     appendNodeBlock: (...arg: any) => void,
     detachNodeBlock: (...arg: any) => void,
+    addNodeLine: (initialPos: CoordArray, owner?: React.RefObject<HTMLDivElement | null>) => NodeDragLine | void,
+    removeNodeLine: (nodeObj?: NodeDragLine) => void,
 }
 
 const defaultAppContext: TAppContext = {
     appendNodeBlock: () => {},
     detachNodeBlock: () => {},
+    addNodeLine: () => {},
+    removeNodeLine: () => {},
 }
 
 export const AppContext = createContext<TAppContext>(defaultAppContext);
@@ -97,8 +101,11 @@ function NodeSpaceWrapper({
     ...rest
 }: INodeSpaceWrapperProps) {
     const ref = useRef<HTMLDivElement>(null);
+    const canvasRef = useRef<HTMLCanvasElement>(null);
     const [ isOver, setIsOver ] = useState(false);
     const [ spaceState, setSpaceState ] = useState<React.ReactElement<IBaseNode>[]>([]);
+    const [ nodeLines, setNodeLines ] = useState<NodeDragLine[]>([]); // Temporary drag lines
+    const [ nodeConnectionLines, setNodeConnectionLines ] = useState(); // Active line connections
 
     const blockData = configBlockData({
         type: "node-space",
@@ -119,9 +126,30 @@ function NodeSpaceWrapper({
 
     const detachNodeBlock = () => {};
 
-    const ctx: TAppContext = {
-        appendNodeBlock,
-        detachNodeBlock
+    const addNodeLine = (initialPos: CoordArray, owner?: React.RefObject<HTMLDivElement | null>) => {
+        const nodeOwner = owner?.current;
+        if (!nodeOwner) return;
+        const selfBbox = ref.current?.getBoundingClientRect();
+        const selfRelativePosition: CoordArray = [ selfBbox?.x || 0, selfBbox?.y || 0];
+        const nlObject = new NodeDragLine(initialPos, selfRelativePosition, nodeOwner);
+        setNodeLines(prev => [...prev, nlObject]);
+        return nlObject;
+    }
+
+    const removeNodeLine = (nodeObj?: NodeDragLine) => {
+        if (!nodeObj) return;
+        if (nodeObj instanceof NodeDragLine) {
+            const newState = nodeLines.filter(node => node !== nodeObj);
+            setNodeLines(newState);
+        }
+    }
+
+    const draw = (ctx: CanvasRenderingContext2D) => {
+        ctx.clearRect(0, 0, ctx.canvas.width, ctx.canvas.height);
+
+        nodeLines.map(node => {
+            node.requestDraw(ctx);
+        });
     }
 
     useEffect(() => {
@@ -136,6 +164,36 @@ function NodeSpaceWrapper({
         }
     }, []);
 
+    useEffect(() => {
+        const canvas = canvasRef.current;
+        const ctx = canvas?.getContext('2d');
+        let animationFrame: any;
+
+        if (ctx) {
+            if (ref.current) {
+                const bbox = ref.current.getBoundingClientRect();
+                ctx.canvas.width = bbox.width;
+                ctx.canvas.height = bbox.height;
+            }
+            const render = () => {
+                draw(ctx);
+                animationFrame = window.requestAnimationFrame(render);
+            }
+            render();
+
+            return () => {
+                window.cancelAnimationFrame(animationFrame);
+            }
+        }
+    }, [draw]);
+
+    const ctx: TAppContext = {
+        appendNodeBlock,
+        detachNodeBlock,
+        addNodeLine,
+        removeNodeLine
+    }
+
     return (
         <AppContext.Provider value={ctx}>
             <div
@@ -144,6 +202,12 @@ function NodeSpaceWrapper({
                 ref={ref}
                 {...rest}
             >
+                <canvas
+                    id="canvasOverlay"
+                    className="z-50 absolute top-0 left-0 pointer-events-none"
+                    ref={canvasRef}
+                />
+
                 <div
                     className="relative w-full h-full"
                 >

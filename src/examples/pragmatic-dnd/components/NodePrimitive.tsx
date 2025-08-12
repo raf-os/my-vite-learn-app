@@ -52,8 +52,8 @@ export default function NodePrimitive({
     });
 
     const styleOverride = {
-        ...style,
-        opacity: isDragging?"50%":"100%"
+        opacity: isDragging?"50%":"100%",
+        ...style
     }
 
     useEffect(() => {

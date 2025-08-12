@@ -1,15 +1,19 @@
 import NodePrimitive, { type INodePrimitive } from "./NodePrimitive";
-import BaseIONode from "./BaseIONode";
+import BaseIONode, {type IBaseIONode} from "./BaseIONode";
 import { useRef, useState } from "react";
 import { Grip } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Coordinate, TAppLayers } from "../types";
 import { configBlockData } from "../utils";
 
+export type INodeIOConfig = Omit<IBaseIONode, "type">;
+
 export interface IBaseNode extends INodePrimitive {
     header: React.ReactNode,
     posX?: number,
-    posY?: number
+    posY?: number,
+    inputs?: INodeIOConfig[],
+    outputs?: INodeIOConfig[],
 }
 
 export default function BaseNode({
@@ -20,6 +24,8 @@ export default function BaseNode({
     blockData,
     posX = 0,
     posY = 0,
+    inputs,
+    outputs,
     ...rest
 }: IBaseNode) {
     const handleRef = useRef<HTMLDivElement>(null);
@@ -87,8 +93,8 @@ export default function BaseNode({
                 >
                     I/O nodes
                 </div>
-                <BaseIONode type="input" label="input" />
-                <BaseIONode type="output" label="yes" />
+                { inputs?.map((inp, idx) => (<BaseIONode type="input" label={inp.label} key={`input-${idx}`} />))}
+                { outputs?.map((inp, idx) => (<BaseIONode type="output" label={inp.label} key={`input-${idx}`} />))}
             </div>
         </NodePrimitive>
     )

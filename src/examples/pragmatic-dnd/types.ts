@@ -26,6 +26,38 @@ export type TIOConfig = {
     accepts: ExtractValues<typeof IODataTypes>
 }
 
+export type CoordArray = [number, number];
+
+export class NodeDragLine {
+    initialPos: CoordArray;
+    currentPos: CoordArray;
+    baseOffset: CoordArray;
+    owner?: HTMLDivElement;
+
+    constructor(initialPos: CoordArray, baseOffset: CoordArray, owner?: HTMLDivElement) {
+        this.initialPos = initialPos;
+        this.currentPos = initialPos;
+        this.baseOffset = baseOffset;
+        this.owner = owner;
+    }
+
+    updatePosition(newPos: CoordArray) {
+        this.currentPos = newPos;
+    }
+
+    requestDraw(ctx: CanvasRenderingContext2D) {
+        ctx.strokeStyle = "#000000";
+        ctx.fillStyle = "#000000";
+        ctx.lineWidth = 2;
+        ctx.lineCap = "round";
+        
+        ctx.beginPath();
+        ctx.moveTo(this.initialPos[0] - this.baseOffset[0], this.initialPos[1] - this.baseOffset[1]);
+        ctx.lineTo(this.currentPos[0] - this.baseOffset[0], this.currentPos[1] - this.baseOffset[1]);
+        ctx.stroke();
+    }
+}
+
 export class Coordinate {
     private _myPos: TCoord;
 
