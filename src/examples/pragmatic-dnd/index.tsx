@@ -8,6 +8,9 @@ import { v4 as uuid } from "uuid";
 
 import TestNode from "./components/nodes/TestNode";
 
+/**
+ * @todo This is straight up a mess, clean this up later.
+ */
 type TAppContext = {
     appendNodeBlock: (...arg: any) => void,
     detachNodeBlock: (...arg: any) => void,
@@ -15,6 +18,7 @@ type TAppContext = {
     removeNodeLine: (nodeObj?: NodeDragLine) => void,
     addNodeConnection: (from: HTMLDivElement | null, to: HTMLDivElement | null) => NodeConnection | void,
     removeNodeConnection: (instance: NodeConnection) => void,
+    updateConnectionPositions: () => void,
 }
 
 const defaultAppContext: TAppContext = {
@@ -24,6 +28,7 @@ const defaultAppContext: TAppContext = {
     removeNodeLine: () => {},
     addNodeConnection: () => {},
     removeNodeConnection: () => {},
+    updateConnectionPositions: () => {}
 }
 
 export const AppContext = createContext<TAppContext>(defaultAppContext);
@@ -151,7 +156,7 @@ function NodeSpaceWrapper({
 
     const addNodeConnection: TAppContext['addNodeConnection'] = (from, to) => {
         if (!from || !to) return;
-        const curSpace = nodeConnectionSpace.filter(nc => nc.originNode === from); // Remove existing connections
+        const prevState = nodeConnectionSpace.filter(nc => nc.originNode !== from);
         const selfBbox = ref.current?.getBoundingClientRect();
         const selfRelativePosition = new Coordinate(selfBbox?.x, selfBbox?.y);
         const nodeConnection = new NodeConnection({
@@ -159,7 +164,7 @@ function NodeSpaceWrapper({
             to: to,
             baseOffset: selfRelativePosition
         });
-        setNodeConnectionSpace([...curSpace, nodeConnection]);
+        setNodeConnectionSpace([...prevState, nodeConnection]);
         return nodeConnection;
     }
 
@@ -169,6 +174,11 @@ function NodeSpaceWrapper({
             const newState = nodeConnectionSpace.filter(node => node !== instance);
             setNodeConnectionSpace(newState);
         }
+    }
+
+    const updateConnectionPositions = () => {
+        // TODO: Possible performance hit in edge cases, keep an eye on this in the future and maybe only update relevant nodes
+        nodeConnectionSpace.map(conn => conn.updatePositions());
     }
 
     const draw = (ctx: CanvasRenderingContext2D) => {
@@ -225,7 +235,8 @@ function NodeSpaceWrapper({
         addNodeLine,
         removeNodeLine,
         addNodeConnection,
-        removeNodeConnection
+        removeNodeConnection,
+        updateConnectionPositions
     }
 
     return (

@@ -1,6 +1,6 @@
 import NodePrimitive, { type INodePrimitive } from "./NodePrimitive";
 import BaseIONode, {type IBaseIONode} from "./BaseIONode";
-import { useRef, useState, createContext, useContext } from "react";
+import { useRef, useState, createContext, useContext, useEffect } from "react";
 import { AppContext } from "..";
 import { Grip } from "lucide-react";
 import { cn } from "@/lib/utils";
@@ -44,10 +44,10 @@ export default function BaseNode({
 }: IBaseNode) {
     const handleRef = useRef<HTMLDivElement>(null);
     const myRef = useRef<HTMLDivElement>(null);
-    const OutputRefs = useRef<(HTMLDivElement | null | undefined)[]>([]);
+    const nodeRefs = useRef<(HTMLDivElement | null | undefined)[]>([]);
     const [ myPos, setMyPos ] = useState<Coordinate>(new Coordinate(posX, posY));
     const [ connections, setConnections ] = useState<{ owner: HTMLDivElement, connection: NodeConnection}[]>([]);
-    const { addNodeConnection, removeNodeConnection } = useContext(AppContext);
+    const { addNodeConnection, removeNodeConnection, updateConnectionPositions } = useContext(AppContext);
 
     const myData = configBlockData({
         type: "node-block",
@@ -61,27 +61,27 @@ export default function BaseNode({
         top: myPos.y,
     };
 
-    const registerIO = (conf: INodeIOConfig[] | undefined, type: IBaseIONode['type'], nodeRef?: (node: HTMLDivElement | null, idx: number) => void) => {
+    const registerIO = (conf: INodeIOConfig[] | undefined, type: IBaseIONode['type']) => {
         return conf?.map((nd, idx) => (
             <BaseIONode
                 label={nd.label}
                 type={type}
                 key={`${type}-${idx}`}
-                nodeRef={node => nodeRef?.(node, idx)}
+                nodeRef={node => registerNodeRef(node, idx)}
             />
         ));
     }
 
-    const attachOutputNode = (node: HTMLDivElement | null, idx: number) => {
+    const registerNodeRef = (node: HTMLDivElement | null, idx: number) => {
         if (node) {
-            OutputRefs.current[idx] = node;
+            nodeRefs.current[idx] = node;
         } else {
-            OutputRefs.current[idx] = undefined;
+            nodeRefs.current[idx] = undefined;
         }
     }
 
     const connectNode = (self: HTMLDivElement, target: HTMLDivElement) => {
-        const nList = connections.filter(con => con.owner === self);
+        const nList = connections.filter(con => con.owner !== self);
         const nObj = addNodeConnection(self, target);
         if (nObj) {
             nList.push({
@@ -100,6 +100,11 @@ export default function BaseNode({
         );
         setMyPos(newPos);
     }
+
+
+    useEffect(() => {
+        updateConnectionPositions();
+    }, [myPos]);
 
     const ctx = {
         owner: myRef,
@@ -150,7 +155,7 @@ export default function BaseNode({
                         I/O nodes
                     </div>
                     { registerIO(inputs, "input") }
-                    { registerIO(outputs, "output", attachOutputNode) }
+                    { registerIO(outputs, "output") }
                 </div>
             </NodePrimitive>
         </BaseNodeContext.Provider>
