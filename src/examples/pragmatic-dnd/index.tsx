@@ -1,7 +1,8 @@
 import { useRef, useEffect, useState, createContext, cloneElement } from "react";
 import { dropTargetForElements } from "@atlaskit/pragmatic-drag-and-drop/element/adapter";
 import { type IBaseNode } from "./components/BaseNode";
-import { TAppLayers, NodeDragLine, type CoordArray } from "./types";
+import { TAppLayers, NodeDragLine, type CoordArray, Coordinate } from "./types";
+import { NodeConnection } from "./classes/NodeConnection";
 import { configBlockData } from "./utils";
 import { v4 as uuid } from "uuid";
 
@@ -12,6 +13,8 @@ type TAppContext = {
     detachNodeBlock: (...arg: any) => void,
     addNodeLine: (initialPos: CoordArray, owner?: React.RefObject<HTMLDivElement | null>) => NodeDragLine | void,
     removeNodeLine: (nodeObj?: NodeDragLine) => void,
+    addNodeConnection: (from: HTMLDivElement | null, to: HTMLDivElement | null) => NodeConnection | void,
+    removeNodeConnection: (instance: NodeConnection) => void,
 }
 
 const defaultAppContext: TAppContext = {
@@ -19,6 +22,8 @@ const defaultAppContext: TAppContext = {
     detachNodeBlock: () => {},
     addNodeLine: () => {},
     removeNodeLine: () => {},
+    addNodeConnection: () => {},
+    removeNodeConnection: () => {},
 }
 
 export const AppContext = createContext<TAppContext>(defaultAppContext);
@@ -105,7 +110,7 @@ function NodeSpaceWrapper({
     const [ isOver, setIsOver ] = useState(false);
     const [ spaceState, setSpaceState ] = useState<React.ReactElement<IBaseNode>[]>([]);
     const [ nodeLines, setNodeLines ] = useState<NodeDragLine[]>([]); // Temporary drag lines
-    const [ nodeConnectionLines, setNodeConnectionLines ] = useState(); // Active line connections
+    const [ nodeConnectionSpace, setNodeConnectionSpace ] = useState<NodeConnection[]>([]); // Active line connections
 
     const blockData = configBlockData({
         type: "node-space",
@@ -144,9 +149,35 @@ function NodeSpaceWrapper({
         }
     }
 
+    const addNodeConnection: TAppContext['addNodeConnection'] = (from, to) => {
+        if (!from || !to) return;
+        const curSpace = nodeConnectionSpace.filter(nc => nc.originNode === from); // Remove existing connections
+        const selfBbox = ref.current?.getBoundingClientRect();
+        const selfRelativePosition = new Coordinate(selfBbox?.x, selfBbox?.y);
+        const nodeConnection = new NodeConnection({
+            from: from,
+            to: to,
+            baseOffset: selfRelativePosition
+        });
+        setNodeConnectionSpace([...curSpace, nodeConnection]);
+        return nodeConnection;
+    }
+
+    const removeNodeConnection = (instance?: NodeConnection) => {
+        if (!instance) return;
+        if (instance instanceof NodeConnection) {
+            const newState = nodeConnectionSpace.filter(node => node !== instance);
+            setNodeConnectionSpace(newState);
+        }
+    }
+
     const draw = (ctx: CanvasRenderingContext2D) => {
         // TODO: Make so it only draws when something changes, instead of every frame.
         ctx.clearRect(0, 0, ctx.canvas.width, ctx.canvas.height);
+
+        nodeConnectionSpace.map(node => {
+            node.requestRender(ctx);
+        });
 
         nodeLines.map(node => {
             node.requestDraw(ctx);
@@ -192,7 +223,9 @@ function NodeSpaceWrapper({
         appendNodeBlock,
         detachNodeBlock,
         addNodeLine,
-        removeNodeLine
+        removeNodeLine,
+        addNodeConnection,
+        removeNodeConnection
     }
 
     return (

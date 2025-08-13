@@ -13,7 +13,7 @@ import { dropTargetForElements } from "@atlaskit/pragmatic-drag-and-drop/element
 export interface IBaseIONode {
     type: "input" | "output",
     label: string,
-    nodeRef?: React.RefObject<HTMLDivElement>,
+    nodeRef?: React.Ref<HTMLDivElement>,
 }
 
 export default function BaseIONode(props: IBaseIONode) {
@@ -35,10 +35,13 @@ const NodeElement = (props: ComponentPropsWithRef<'div'> & {type: "input" | "out
     )
 }
 
-function useMultipleRefs(...refs: (React.RefObject<HTMLDivElement | null> | undefined)[]): React.RefCallback<HTMLDivElement> {
+function useMultipleRefs(...refs: (React.Ref<HTMLDivElement | null> | undefined)[]): React.RefCallback<HTMLDivElement> {
     const validRefs = refs.filter(r => (r!==undefined && r!==null));
     return (node: HTMLDivElement | null) => {
-        validRefs.map(ref => ref.current = node);
+        validRefs.map(ref => {
+            if (typeof ref === "function") { ref(node); }
+            else ref.current = node;
+        });
     }
 }
 
@@ -47,8 +50,9 @@ function IONodeInput({
     nodeRef,
 }: IBaseIONode) {
     const ref = useRef<HTMLDivElement>(null);
+    const handleRef = useRef<HTMLDivElement>(null);
     const [ isOver, setIsOver ] = useState<boolean>(false);
-    const { owner } = useContext(BaseNodeContext);
+    const { owner, connectNode } = useContext(BaseNodeContext);
 
     const assignRefs = useMultipleRefs(ref, nodeRef);
 
@@ -56,7 +60,15 @@ function IONodeInput({
         type: "io-node-input",
         layer: TAppLayers.Space,
         owner: owner,
+        myRef: handleRef
     });
+
+    const isTargetValid = (payload: any) => { // Todo: TS typing, this library is very cringe about exporting types
+        const target = getTopmostDropTarget(payload.location);
+        const sourceOwner = payload.source.data['owner'] as (React.RefObject<HTMLDivElement | null> | null);
+
+        return (target && target.element === ref.current && payload.source.data['type'] === "io-node-output") && (sourceOwner !== owner);
+    }
 
     useEffect(() => {
         const el = ref.current;
@@ -66,19 +78,21 @@ function IONodeInput({
                 element: el,
                 getData: () => (blockData),
                 onDropTargetChange: (payload) => {
-                    const target = getTopmostDropTarget(payload.location);
-                    const sourceOwner = payload.source.data['owner'] as (React.RefObject<HTMLDivElement | null> | null);
-
-                    const isTargetValid = target && target.element === ref.current && payload.source.data['type'] === "io-node-output";
-                    const isSourceOther = (sourceOwner !== owner);
-
-                    if (isTargetValid && isSourceOther) {
+                    if (isTargetValid(payload)) {
                         setIsOver(true);
                     } else {
                         setIsOver(false);
                     }
                 },
-                onDrop: () => {
+                onDrop: (payload) => {
+                    if (isTargetValid(payload) && handleRef.current) {
+                        const target = getTopmostDropTarget(payload.location);
+                        const tRef = target?.data['myRef'] as React.RefObject<HTMLDivElement | null>;
+                        const sRef = payload.source.data['myRef'] as React.RefObject<HTMLDivElement | null>;
+                        if (tRef.current && sRef.current) {
+                            connectNode(sRef.current, tRef.current);
+                        }
+                    }
                     setIsOver(false);
                 }
             });
@@ -93,6 +107,7 @@ function IONodeInput({
             <NodeElement
                 className={isOver?"inset-ring-green-500":"inset-ring-neutral-950"}
                 type="input"
+                ref={handleRef}
             />
             { label }
         </div>
@@ -117,6 +132,7 @@ export function IONodeOutput({
         type: "io-node-output",
         layer: TAppLayers.Space,
         owner: owner,
+        myRef: handleRef
     });
 
     const startDragging = (location?: [number, number]) => {
