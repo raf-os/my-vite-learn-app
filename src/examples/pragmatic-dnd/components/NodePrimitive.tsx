@@ -1,4 +1,4 @@
-import { useRef, useEffect, useState } from "react";
+import { useRef, useEffect, useState, useCallback } from "react";
 import { draggable } from "@atlaskit/pragmatic-drag-and-drop/element/adapter";
 import { type BaseEventPayload, type ElementDragType } from "@atlaskit/pragmatic-drag-and-drop/types";
 import { Coordinate, TAppLayers } from "../types";
@@ -25,7 +25,8 @@ export interface INodePrimitive extends Omit<React.ComponentPropsWithoutRef<'div
     inputs?: any,
     outputs?: any,
     handleRef?: React.RefObject<HTMLDivElement | null>,
-    blockData?: IBlockData
+    blockData?: IBlockData,
+    myRef?: React.Ref<HTMLDivElement | null>,
 }
 
 export default function NodePrimitive({
@@ -40,6 +41,7 @@ export default function NodePrimitive({
     fnOverride,
     handleRef,
     blockData,
+    myRef,
     ...rest
 }: INodePrimitive) {
     const ref = useRef<HTMLDivElement>(null);
@@ -62,7 +64,7 @@ export default function NodePrimitive({
 
             return draggable({
                 element: element,
-                dragHandle: (handleRef && handleRef.current!==null) ? handleRef.current : element,
+                dragHandle: (handleRef!==undefined && handleRef.current!==null) ? handleRef.current : element,
                 getInitialData: () => (myBlockData),
                 onDragStart: (payload) => {
                     setIsDragging(true);
@@ -124,7 +126,13 @@ export default function NodePrimitive({
                 className
             )}
             style={styleOverride}
-            ref={ref}
+            ref={node => {
+                ref.current = node;
+                if (myRef) {
+                    if (typeof myRef === "function") myRef(node);
+                    else myRef.current = node;
+                }
+            }}
             {...rest}
         >
             { children }

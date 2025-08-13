@@ -145,6 +145,7 @@ function NodeSpaceWrapper({
     }
 
     const draw = (ctx: CanvasRenderingContext2D) => {
+        // TODO: Make so it only draws when something changes, instead of every frame.
         ctx.clearRect(0, 0, ctx.canvas.width, ctx.canvas.height);
 
         nodeLines.map(node => {
@@ -204,7 +205,7 @@ function NodeSpaceWrapper({
             >
                 <canvas
                     id="canvasOverlay"
-                    className="z-50 absolute top-0 left-0 pointer-events-none"
+                    className="z-20 absolute top-0 left-0 pointer-events-none"
                     ref={canvasRef}
                 />
 

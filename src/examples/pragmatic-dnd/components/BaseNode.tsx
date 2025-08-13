@@ -1,6 +1,6 @@
 import NodePrimitive, { type INodePrimitive } from "./NodePrimitive";
 import BaseIONode, {type IBaseIONode} from "./BaseIONode";
-import { useRef, useState } from "react";
+import { useRef, useState, useEffect, createContext } from "react";
 import { Grip } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Coordinate, TAppLayers } from "../types";
@@ -16,6 +16,16 @@ export interface IBaseNode extends INodePrimitive {
     outputs?: INodeIOConfig[],
 }
 
+export interface IBaseNodeContext {
+    owner: React.RefObject<HTMLDivElement | null> | null,
+}
+
+const defaultNodeContext: IBaseNodeContext = {
+    owner: null,
+}
+
+export const BaseNodeContext = createContext<IBaseNodeContext>(defaultNodeContext);
+
 export default function BaseNode({
     children,
     className,
@@ -29,6 +39,7 @@ export default function BaseNode({
     ...rest
 }: IBaseNode) {
     const handleRef = useRef<HTMLDivElement>(null);
+    const myRef = useRef<HTMLDivElement>(null);
     const [ myPos, setMyPos ] = useState<Coordinate>(new Coordinate(posX, posY));
 
     const myData = configBlockData({
@@ -52,50 +63,57 @@ export default function BaseNode({
         setMyPos(newPos);
     }
 
+    const ctx = {
+        owner: myRef,
+    }
+
     return (
-        <NodePrimitive
-            className={cn(
-                "absolute bg-slate-200 rounded-box flex flex-col overflow-hidden",
-                className
-            )}
-            handleRef={handleRef}
-            style={_style}
-            onSpaceDrop={onSpaceDrop}
-            blockData={myData}
-            {...rest}
-        >
-            <div
-                data-slot="node-block-header"
-                className="flex items-center font-medium gap-1 p-2 bg-slate-500 text-neutral-50 cursor-pointer"
-                ref={handleRef}
+        <BaseNodeContext.Provider value={ctx}>
+            <NodePrimitive
+                className={cn(
+                    "absolute bg-slate-200 rounded-box flex flex-col overflow-hidden",
+                    className
+                )}
+                handleRef={handleRef}
+                myRef={myRef}
+                style={_style}
+                onSpaceDrop={onSpaceDrop}
+                blockData={myData}
+                {...rest}
             >
                 <div
-                    className="grow-0 shrink-0"
+                    data-slot="node-block-header"
+                    className="flex items-center font-medium gap-1 p-2 bg-slate-500 text-neutral-50 cursor-pointer"
+                    ref={handleRef}
                 >
-                    <Grip size={20} />
+                    <div
+                        className="grow-0 shrink-0"
+                    >
+                        <Grip size={20} />
+                    </div>
+                    <>{ header }</>
                 </div>
-                <>{ header }</>
-            </div>
 
-            <div
-                data-slot="node-block-content"
-                className="p-1"
-            >
-                { children }
-            </div>
-
-            <div
-                className="flex flex-col"
-                data-slot="node-block-IO"
-            >
                 <div
-                    className="text-sm font-bold px-1.5 select-none"
+                    data-slot="node-block-content"
+                    className="p-1"
                 >
-                    I/O nodes
+                    { children }
                 </div>
-                { inputs?.map((inp, idx) => (<BaseIONode type="input" label={inp.label} key={`input-${idx}`} />))}
-                { outputs?.map((inp, idx) => (<BaseIONode type="output" label={inp.label} key={`input-${idx}`} />))}
-            </div>
-        </NodePrimitive>
+
+                <div
+                    className="flex flex-col"
+                    data-slot="node-block-IO"
+                >
+                    <div
+                        className="text-sm font-bold px-1.5 select-none"
+                    >
+                        I/O nodes
+                    </div>
+                    { inputs?.map((inp, idx) => (<BaseIONode type="input" label={inp.label} key={`input-${idx}`} />))}
+                    { outputs?.map((inp, idx) => (<BaseIONode type="output" label={inp.label} key={`output-${idx}`} />))}
+                </div>
+            </NodePrimitive>
+        </BaseNodeContext.Provider>
     )
 }
