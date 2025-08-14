@@ -86,6 +86,12 @@ const router = createBrowserRouter([
 					const PragmaticDNDPage = await import("@/examples/pragmatic-dnd");
 					return { Component: PragmaticDNDPage.default }
 				}
+			}, {
+				path: "dnd-class-components/",
+				lazy: async() => {
+					const DNDClassComponents = await import("@/examples/dnd-class-components");
+					return { Component: DNDClassComponents.default }
+				}
 			}
 		]
 	}

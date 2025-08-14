@@ -29,6 +29,10 @@ export default function Home() {
                 <Link to="/pragmatic-dnd">
                     Drag n drop, using pragmatic dnd instead
                 </Link>
+
+                <Link to="/dnd-class-components">
+                    DnD, now using class components
+                </Link>
             </div>
         </div>
     )

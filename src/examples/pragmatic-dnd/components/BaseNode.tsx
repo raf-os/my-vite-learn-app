@@ -80,6 +80,7 @@ export default function BaseNode({
         }
     }
 
+    // TODO: Consider moving this up one level, to the app's "singleton"
     const connectNode = (self: HTMLDivElement, target: HTMLDivElement) => {
         const nList = connections.filter(con => con.owner !== self);
         const nObj = addNodeConnection(self, target);
