@@ -1,3 +1,5 @@
+import TestNode from "./assets/TestNode"
+
 export default function NodePanel() {
     return (
         <div
@@ -17,7 +19,7 @@ export default function NodePanel() {
                     className="bg-neutral-200 rounded-box grow-1 shrink-1 h-full p-2 overflow-hidden"
                     data-slot="node-preset-list"
                 >
-                    none
+                    <TestNode />
                 </div>
             </div>
         </div>

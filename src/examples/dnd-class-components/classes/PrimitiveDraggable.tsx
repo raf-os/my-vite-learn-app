@@ -4,8 +4,9 @@ import Coordinate from "./Coordinate";
 import { type BlockData, type NarrowByType, AppLayers } from "../types";
 import { type BaseEventPayload, type ElementDragType } from "@atlaskit/pragmatic-drag-and-drop/types";
 import { configNodeData, isDropTargetValid } from "../utils";
+import { cn } from "@/lib/utils";
 
-type EvPayload = BaseEventPayload<ElementDragType>;
+export type EvPayload = BaseEventPayload<ElementDragType>;
 
 export interface PrimitiveDraggableProps extends React.ComponentPropsWithRef<'div'> {}
 
@@ -31,6 +32,7 @@ export abstract class PrimitiveDraggable<
     nodeData: BlockData & { type: T };
     functionOverrides?: Partial<Parameters<typeof draggable>[0]>;
     baseStyle: React.CSSProperties = {};
+    className?: string;
 
     constructor(props: U) {
         super(props);
@@ -46,6 +48,7 @@ export abstract class PrimitiveDraggable<
 
     onDragStart(payload: EvPayload) {
         this.updateState({ isDragging: true });
+
         const myRect = this.draggableRef.current?.getBoundingClientRect();
         const rectPos = new Coordinate(myRect?.x, myRect?.y);
 
@@ -57,6 +60,7 @@ export abstract class PrimitiveDraggable<
     }
 
     onDrop(payload: EvPayload) {
+        this.updateState({ isDragging: false });
         const { location } = payload;
         const relativePositions: EventRelativePayload = payload.location.current.dropTargets.map((target, idx) => {
             const { x: rx, y: ry } = target.element.getBoundingClientRect();
@@ -70,8 +74,6 @@ export abstract class PrimitiveDraggable<
             }
         });
 
-        this.updateState({ isDragging: false });
-
         if (isDropTargetValid(location, AppLayers.Panel)) {
             this.onPanelDrop?.(payload, relativePositions);
         } else if (isDropTargetValid(location, AppLayers.Space)) {
@@ -80,8 +82,8 @@ export abstract class PrimitiveDraggable<
     }
 
     onDrag?(payload: EvPayload): void;
-    onPanelDrop?(payload: EvPayload, relativePositions?: EventRelativePayload): void;
-    onSpaceDrop?(payload: EvPayload, relativePositions?: EventRelativePayload): void;
+    onPanelDrop?(payload: EvPayload, relativePositions: EventRelativePayload): void;
+    onSpaceDrop?(payload: EvPayload, relativePositions: EventRelativePayload): void;
 
     setupData(): BlockData {
         return configNodeData({
@@ -90,9 +92,9 @@ export abstract class PrimitiveDraggable<
         });
     }
 
-    updateDraggingStyle() {
+    updateDraggingStyle(newState: boolean) {
         this.baseStyle = {
-            opacity: this.state.isDragging ? "50%":"100%",
+            opacity: newState ? "50%" : "100%",
         }
     }
 
@@ -104,18 +106,17 @@ export abstract class PrimitiveDraggable<
                 element: el,
                 dragHandle: this.handleRef.current || el,
                 getInitialData: () => (this.nodeData),
-                onDragStart: this.onDragStart,
-                onDrag: this.onDrag,
+                onDragStart: (payload) => this.onDragStart(payload),
+                onDrag: (payload) => this.onDrag?.(payload),
+                onDrop: (payload) => this.onDrop(payload),
                 ...this.functionOverrides
             });
         }
-        this.updateState({ isDragging: false});
     }
 
-    componentDidUpdate({}, prevState: Readonly<PrimitiveDraggableState>): void {
-        if (prevState.isDragging !== this.state.isDragging) {
-            this.updateDraggingStyle();
-        }
+    shouldComponentUpdate(nextProps: Readonly<U>, nextState: Readonly<V>, nextContext: any): boolean {
+        this.updateDraggingStyle(nextState.isDragging);
+        return true;
     }
 
     componentWillUnmount(): void {
@@ -128,6 +129,11 @@ export abstract class PrimitiveDraggable<
         return (
             <div
                 ref={this.draggableRef}
+                className={cn(
+                    this.className,
+                    this.props.className
+                )}
+                style={this.baseStyle}
             >
                 { this.innerJSX?.() }
             </div>
