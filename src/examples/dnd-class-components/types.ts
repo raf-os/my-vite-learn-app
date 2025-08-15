@@ -1,11 +1,23 @@
+import type { BaseNodeInstanceProps } from "./classes/BaseNodeInstance";
+
+export type TInstanceProps<T extends BaseNodeInstanceProps> = Omit<T, "initialPos" | "_id">;
+
 export const AppLayers = {
     Space: 1 << 0,
     Panel: 1 << 1,
 }
 
+export interface ICanvasDrawable {
+    requestCanvasRender: (ctx: CanvasRenderingContext2D) => void;
+}
+
 type BaseBlockData = {
     layer: number,
-    [key: string | symbol]: any
+    [key: string | symbol]: any,
+}
+
+interface NodeSpace extends BaseBlockData {
+    type: 'node-space',
 }
 
 interface AbstractNodeBlock extends BaseBlockData {
@@ -18,9 +30,11 @@ interface AssetNodeBlock extends BaseBlockData {
 
 interface InstanceNodeBlock extends BaseBlockData {
     type: 'node-instance',
+    id: string
 }
 
 export type BlockData =
+    NodeSpace |
     AbstractNodeBlock |
     AssetNodeBlock |
     InstanceNodeBlock;

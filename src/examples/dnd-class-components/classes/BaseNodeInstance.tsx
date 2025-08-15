@@ -1,18 +1,69 @@
-import { PrimitiveDraggable, type PrimitiveDraggableProps } from "./PrimitiveDraggable";
+import { PrimitiveDraggable, type EventRelativePayload, type PrimitiveDraggableProps, type PrimitiveDraggableState } from "./PrimitiveDraggable";
+import { NodeSpaceContext } from "../components/NodeSpaceContext";
+import Coordinate from "./Coordinate";
 import { configNodeData } from "../utils";
 import { AppLayers } from "../types";
 import { Grip } from "lucide-react";
 
-interface BaseNodeInstanceProps extends PrimitiveDraggableProps {
+export interface BaseNodeInstanceProps extends PrimitiveDraggableProps {
+    _id: string,
     header: React.ReactNode,
+    initialPos: Coordinate,
 }
 
-export default class BaseNodeInstance extends PrimitiveDraggable<'node-instance', BaseNodeInstanceProps> {
+export interface BaseNodeInstanceState extends PrimitiveDraggableState {
+    pos: Coordinate,
+}
+
+export default class BaseNodeInstance<
+    T extends BaseNodeInstanceProps = BaseNodeInstanceProps,
+    Q extends BaseNodeInstanceState = BaseNodeInstanceState> extends PrimitiveDraggable<'node-instance', T, Q> {
+    _id: string;
+    className: string = "absolute flex flex-col bg-neutral-50 rounded-box overflow-hidden";
+    static contextType = NodeSpaceContext;
+    declare context: React.ContextType<typeof NodeSpaceContext>;
+
+    constructor(props: T) {
+        super(props);
+
+        this._id = this.props._id;
+        this.state = {
+            ...this.state,
+            pos: this.props.initialPos,
+        };
+    }
+
     setupData() {
         return configNodeData({
             type: "node-instance",
             layer: AppLayers.Space,
+            id: this._id,
         });
+    }
+
+    componentDidMount(): void {
+        super.componentDidMount();
+        this.updatePosition(this.props.initialPos);
+    }
+
+    updatePosition(newPosition?: Coordinate) {
+        const newPos = Coordinate.from(newPosition);
+        this.style = {
+            left: newPos.x,
+            top: newPos.y,
+        }
+        this.updateState({
+            pos: Coordinate.from(newPosition),
+        });
+    }
+
+    onSpaceDrop({}, relativePositions: EventRelativePayload): void {
+        const relativePos = relativePositions.find(item => item.data.type === "node-space");
+        const newPos = new Coordinate(
+            (relativePos?.pos.x || 0) - this.dragDelta.x,
+            (relativePos?.pos.y || 0) - this.dragDelta.y
+        );
+        this.updatePosition(newPos);
     }
 
     innerJSX(): React.ReactNode {
@@ -20,21 +71,19 @@ export default class BaseNodeInstance extends PrimitiveDraggable<'node-instance'
             <>
                 <div
                     ref={this.handleRef}
-                    className="flex items-center gap-2 p-2 bg-slate-700 text-neutral-50"
+                    className="flex items-center gap-2 p-2 bg-slate-700 text-neutral-50 cursor-pointer select-none"
                     data-slot="node-instance-header"
                 >
-                    <Grip size={24} />
+                    <Grip size={20} />
                     <div
-                        className="text-sm font-medium"
+                        className="font-medium"
                     >
                         { this.props.header }
                     </div>
-                    
-                    
                 </div>
 
                 <div
-                    className=""
+                    className="text-sm px-2 py-1"
                     data-slot="node-instance-content"
                 >
                     { this.props.children }

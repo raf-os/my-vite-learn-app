@@ -1,14 +1,23 @@
-import { PrimitiveDraggable, type EventRelativePayload, type EvPayload, type PrimitiveDraggableProps } from "./PrimitiveDraggable";
+import { PrimitiveDraggable, type EventRelativePayload, type PrimitiveDraggableProps } from "./PrimitiveDraggable";
+import { type BaseNodeInstanceProps } from "./BaseNodeInstance";
 import { configNodeData } from "../utils";
-import { AppLayers } from "../types";
+import { AppLayers, type TInstanceProps } from "../types";
 import { Grip } from "lucide-react";
+import Coordinate from "./Coordinate";
+import { NodeSpaceContext } from "../components/NodeSpaceContext";
+import { createElement } from "react";
+import { v4 as uuid } from "uuid";
 
 interface BaseNodePresetProps extends PrimitiveDraggableProps {
     header: React.ReactNode,
+    instanceType: new (...args: any[]) => React.Component<any>,
+    instanceProps: TInstanceProps<BaseNodeInstanceProps>,
 }
 
 export default class BaseNodePreset extends PrimitiveDraggable<'node-asset', BaseNodePresetProps> {
     className = "flex bg-amber-400 rounded-box";
+    static contextType = NodeSpaceContext;
+    declare context: React.ContextType<typeof NodeSpaceContext>;
 
     setupData() {
         return configNodeData({
@@ -17,8 +26,23 @@ export default class BaseNodePreset extends PrimitiveDraggable<'node-asset', Bas
         });
     }
 
-    onSpaceDrop(payload: EvPayload, relativePositions: EventRelativePayload): void {
-        // Spawn code goes here
+    onSpaceDrop({}, relativePositions: EventRelativePayload): void {
+        const data = relativePositions.find(item => item.data.type === "node-space");
+        const posX = (data?.pos.x || 0);
+        const posY = (data?.pos.y || 0);
+
+        const mID = uuid();
+
+        // TODO: Maybe create a static helper method for the BaseNodeInstance class instead of createElement, so the class itself can define how a new instance is created
+        this.context.addNodeToSpace(createElement<BaseNodeInstanceProps>(
+            this.props.instanceType,
+            {
+                ...this.props.instanceProps,
+                initialPos: new Coordinate(posX, posY),
+                _id: mID,
+                key: `node-instance(id:${mID})`,
+            }
+        ));
     }
 
     innerJSX(): React.ReactNode {

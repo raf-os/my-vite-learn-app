@@ -4,6 +4,7 @@ export type TCoord = {
 }
 
 export default class Coordinate {
+    // Basic 2D vector with helper functions
     private _myPos: TCoord;
 
     constructor(x?: number, y?: number) {
@@ -11,6 +12,11 @@ export default class Coordinate {
             x: x || 0,
             y: y || 0,
         }
+    }
+
+    static from(c?: Coordinate) {
+        if (c instanceof Coordinate) return c;
+        else return new Coordinate(0, 0);
     }
 
     get x(): number {

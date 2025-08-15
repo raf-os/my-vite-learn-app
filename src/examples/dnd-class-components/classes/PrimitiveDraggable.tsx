@@ -32,6 +32,8 @@ export abstract class PrimitiveDraggable<
     nodeData: BlockData & { type: T };
     functionOverrides?: Partial<Parameters<typeof draggable>[0]>;
     baseStyle: React.CSSProperties = {};
+    style: React.CSSProperties = {}; // Change in case you want to override in child instances
+    key?: string;
     className?: string;
 
     constructor(props: U) {
@@ -40,10 +42,10 @@ export abstract class PrimitiveDraggable<
     }
 
     updateState(newObj: Partial<PrimitiveDraggableState>) {
-        this.setState({
-            ...this.state,
+        this.setState((prev) => { return {
+            ...prev,
             ...newObj
-        });
+        }});
     }
 
     onDragStart(payload: EvPayload) {
@@ -133,7 +135,11 @@ export abstract class PrimitiveDraggable<
                     this.className,
                     this.props.className
                 )}
-                style={this.baseStyle}
+                style={{
+                    ...this.baseStyle,
+                    ...this.style
+                }}
+                key={this.key}
             >
                 { this.innerJSX?.() }
             </div>
