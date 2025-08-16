@@ -1,6 +1,11 @@
 import type { BaseNodeInstanceProps } from "./classes/BaseNodeInstance";
+import { type BaseEventPayload, type ElementDragType } from "@atlaskit/pragmatic-drag-and-drop/types";
 
 export type TInstanceProps<T extends BaseNodeInstanceProps> = Omit<T, "initialPos" | "_id">;
+
+export type ExtractValues<T extends Record<string, string>> = T[keyof T];
+
+export type EvPayload = BaseEventPayload<ElementDragType>;
 
 export const AppLayers = {
     Space: 1 << 0,
@@ -20,6 +25,12 @@ interface NodeSpace extends BaseBlockData {
     type: 'node-space',
 }
 
+interface IONode extends BaseBlockData {
+    type: 'io-node',
+    strat: 'input' | 'output',
+    dataType: 'string' | 'number' | 'boolean',
+}
+
 interface AbstractNodeBlock extends BaseBlockData {
     type: 'node-abstract',
 };
@@ -35,6 +46,7 @@ interface InstanceNodeBlock extends BaseBlockData {
 
 export type BlockData =
     NodeSpace |
+    IONode |
     AbstractNodeBlock |
     AssetNodeBlock |
     InstanceNodeBlock;

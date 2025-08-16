@@ -1,12 +1,9 @@
 import { Component, createRef } from "react";
 import { draggable } from "@atlaskit/pragmatic-drag-and-drop/element/adapter";
 import Coordinate from "./Coordinate";
-import { type BlockData, type NarrowByType, AppLayers } from "../types";
-import { type BaseEventPayload, type ElementDragType } from "@atlaskit/pragmatic-drag-and-drop/types";
+import { type BlockData, type NarrowByType, type EvPayload, AppLayers } from "../types";
 import { configNodeData, isDropTargetValid } from "../utils";
 import { cn } from "@/lib/utils";
-
-export type EvPayload = BaseEventPayload<ElementDragType>;
 
 export interface PrimitiveDraggableProps extends React.ComponentPropsWithRef<'div'> {}
 
@@ -41,7 +38,7 @@ export abstract class PrimitiveDraggable<
         this.nodeData = this.setupData() as NarrowByType<BlockData, T>;
     }
 
-    updateState(newObj: Partial<PrimitiveDraggableState>) {
+    updateState<K extends keyof V>(newObj: Pick<V, K>) {
         this.setState((prev) => { return {
             ...prev,
             ...newObj

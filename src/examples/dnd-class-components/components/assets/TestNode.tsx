@@ -1,12 +1,23 @@
 import BaseNodePreset from "../../classes/BaseNodePreset";
 import BaseNodeInstance from "../../classes/BaseNodeInstance";
+import { BaseIONodeOutput } from "../../classes/BaseIONode";
 import type { TInstanceProps } from "../../types";
 
 export default function TestNode() {
 
     const instanceProps: TInstanceProps<TestNodeInstance['props']> = {
         header: 'Test Node Instance',
-        children: 'Test node instance, y\'all',
+        children: (
+            <>
+            <div>
+                Test node instance.
+            </div>
+
+            <div>
+                <BaseIONodeOutput _id="12345" type="output" label="sample output" dataType="boolean" />
+            </div>
+            </>
+        ),
     }
 
     return (
