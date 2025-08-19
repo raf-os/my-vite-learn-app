@@ -1,14 +1,17 @@
 import { PrimitiveDraggable, type EventRelativePayload, type PrimitiveDraggableProps, type PrimitiveDraggableState } from "./PrimitiveDraggable";
 import { NodeSpaceContext } from "../components/NodeSpaceContext";
+import BaseIONode from "./BaseIONode";
 import Coordinate from "./Coordinate";
 import { configNodeData } from "../utils";
-import { AppLayers } from "../types";
+import { AppLayers, type IONodeProps } from "../types";
 import { Grip } from "lucide-react";
 
 export interface BaseNodeInstanceProps extends PrimitiveDraggableProps {
     _id: string,
     header: React.ReactNode,
     initialPos: Coordinate,
+    inputs?: IONodeProps[],
+    outputs?: IONodeProps[],
 }
 
 export interface BaseNodeInstanceState extends PrimitiveDraggableState {
@@ -20,17 +23,45 @@ export default class BaseNodeInstance<
     Q extends BaseNodeInstanceState = BaseNodeInstanceState> extends PrimitiveDraggable<'node-instance', T, Q> {
     _id: string;
     className: string = "absolute flex flex-col bg-neutral-50 rounded-box overflow-hidden";
+    myInputs: React.ReactElement<typeof BaseIONode>[] = [];
+    myOutputs: React.ReactElement<typeof BaseIONode>[] = [];
     static contextType = NodeSpaceContext;
     declare context: React.ContextType<typeof NodeSpaceContext>;
 
     constructor(props: T) {
         super(props);
 
-        this._id = this.props._id;
+        this._id = props._id;
         this.state = {
             ...this.state,
-            pos: this.props.initialPos,
+            pos: props.initialPos,
         };
+
+        if (props.inputs) { // Almost duplicated code, maybe look into fixing
+            this.myInputs = props.inputs.map((i, idx) => (
+                <BaseIONode
+                    owner={this._id}
+                    type="input"
+                    datatype={i.datatype}
+                    label={i.label}
+                    name={i.name}
+                    key={`input-${idx}`}
+                />
+            ));
+        }
+
+        if (props.outputs) {
+            this.myOutputs = props.outputs.map((i, idx) => (
+                <BaseIONode
+                    owner={this._id}
+                    type="output"
+                    datatype={i.datatype}
+                    label={i.label}
+                    name={i.name}
+                    key={`output-${idx}`}
+                />
+            ));
+        }
     }
 
     setupData() {
@@ -87,6 +118,11 @@ export default class BaseNodeInstance<
                     data-slot="node-instance-content"
                 >
                     { this.props.children }
+                </div>
+
+                <div className="flex flex-col gap-2">
+                    { this.myInputs }
+                    { this.myOutputs }
                 </div>
             </>
         )

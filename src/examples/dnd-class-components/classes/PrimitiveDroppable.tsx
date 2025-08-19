@@ -3,6 +3,20 @@ import { dropTargetForElements } from "@atlaskit/pragmatic-drag-and-drop/element
 import type { BlockData, NarrowByType, EvPayload } from "../types";
 import { cn } from "@/lib/utils";
 
+export class CleanupList {
+    private cList = new Set<(() => void)>();
+
+    add(fn: (() => (() => void))) {
+        const cleanup = fn();
+        this.cList.add(cleanup);
+    }
+
+    exec() {
+        this.cList.forEach(func => func());
+        this.cList.clear();
+    }
+}
+
 export interface PrimitiveDroppableProps extends React.ComponentPropsWithoutRef<'div'> {
 
 }
@@ -10,6 +24,7 @@ export interface PrimitiveDroppableProps extends React.ComponentPropsWithoutRef<
 export interface PrimitiveDroppableState {
     isDragging: boolean,
     isOver: boolean,
+    [key: string]: any,
 }
 
 export abstract class PrimitiveDroppable<
@@ -18,9 +33,9 @@ export abstract class PrimitiveDroppable<
     V extends PrimitiveDroppableState = PrimitiveDroppableState
 > extends Component<U, V> {
     droppableRef = createRef<HTMLDivElement>();
-    droppableCleanup = () => {};
     nodeData: BlockData & { type: T };
     fnOverrides?: Partial<Parameters<typeof dropTargetForElements>[0]>;
+    cleanupFns = new CleanupList();
 
     key?: string;
     style?: string;
@@ -39,24 +54,20 @@ export abstract class PrimitiveDroppable<
         }})
     };
 
-    onDrop(payload: EvPayload) {
-        this.updateState({ isDragging: false });
-    }
-
     componentDidMount(): void {
         if (this.droppableRef.current) {
             const el = this.droppableRef.current;
 
-            this.droppableCleanup = dropTargetForElements({
+            this.cleanupFns.add(() => dropTargetForElements({
                 element: el,
                 getData: () => (this.nodeData),
                 ...this.fnOverrides
-            });
+            }));
         }
     }
 
     componentWillUnmount(): void {
-        this.droppableCleanup();
+        this.cleanupFns.exec();
     }
 
     innerJSX?(): React.ReactNode;

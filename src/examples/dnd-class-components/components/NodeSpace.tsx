@@ -7,7 +7,6 @@ import { AppLayers } from "../types";
 import { NodeSpaceContext, defaultSpaceContext } from "./NodeSpaceContext";
 
 export default function NodeSpace() {
-    // The actual "singleton" for the app
     const ref = useRef<HTMLDivElement>(null);
     const canvasRef = useRef<HTMLCanvasElement>(null);
     const shouldCanvasRedraw = useRef<boolean>(false);

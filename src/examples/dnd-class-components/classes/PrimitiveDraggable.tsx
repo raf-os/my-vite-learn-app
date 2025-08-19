@@ -28,7 +28,7 @@ export abstract class PrimitiveDraggable<
     dragDelta = new Coordinate();
     nodeData: BlockData & { type: T };
     functionOverrides?: Partial<Parameters<typeof draggable>[0]>;
-    baseStyle: React.CSSProperties = {};
+    dragStyle: React.CSSProperties = {};
     style: React.CSSProperties = {}; // Change in case you want to override in child instances
     key?: string;
     className?: string;
@@ -92,7 +92,7 @@ export abstract class PrimitiveDraggable<
     }
 
     updateDraggingStyle(newState: boolean) {
-        this.baseStyle = {
+        this.dragStyle = {
             opacity: newState ? "50%" : "100%",
         }
     }
@@ -133,7 +133,7 @@ export abstract class PrimitiveDraggable<
                     this.props.className
                 )}
                 style={{
-                    ...this.baseStyle,
+                    ...this.dragStyle,
                     ...this.style
                 }}
                 key={this.key}

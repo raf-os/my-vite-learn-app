@@ -1,5 +1,5 @@
 import type { BaseNodeInstanceProps } from "./classes/BaseNodeInstance";
-import { type BaseEventPayload, type ElementDragType } from "@atlaskit/pragmatic-drag-and-drop/types";
+import type { BaseEventPayload, ElementDragType } from "@atlaskit/pragmatic-drag-and-drop/types";
 
 export type TInstanceProps<T extends BaseNodeInstanceProps> = Omit<T, "initialPos" | "_id">;
 
@@ -16,6 +16,12 @@ export interface ICanvasDrawable {
     requestCanvasRender: (ctx: CanvasRenderingContext2D) => void;
 }
 
+export interface IONodeProps {
+    datatype: 'string' | 'number' | 'boolean',
+    name: string,
+    label?: string,
+}
+
 type BaseBlockData = {
     layer: number,
     [key: string | symbol]: any,
@@ -28,7 +34,9 @@ interface NodeSpace extends BaseBlockData {
 interface IONode extends BaseBlockData {
     type: 'io-node',
     strat: 'input' | 'output',
-    dataType: 'string' | 'number' | 'boolean',
+    dataType: IONodeProps['datatype'],
+    id: string,
+    owner: string,
 }
 
 interface AbstractNodeBlock extends BaseBlockData {
