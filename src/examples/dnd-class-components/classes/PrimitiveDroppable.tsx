@@ -1,6 +1,6 @@
 import { Component, createRef } from "react";
 import { dropTargetForElements } from "@atlaskit/pragmatic-drag-and-drop/element/adapter";
-import type { BlockData, NarrowByType, EvPayload } from "../types";
+import type { BlockData, NarrowByType } from "../types";
 import { cn } from "@/lib/utils";
 
 export class CleanupList {

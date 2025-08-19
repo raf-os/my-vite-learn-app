@@ -120,7 +120,7 @@ export default class BaseNodeInstance<
                     { this.props.children }
                 </div>
 
-                <div className="flex flex-col gap-2">
+                <div className="flex flex-col gap-0.5">
                     { this.myInputs }
                     { this.myOutputs }
                 </div>
