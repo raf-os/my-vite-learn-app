@@ -29,11 +29,11 @@ export default class InstanceIOHandler {
         const conn = new NodeConnection({
             nodeID: outputNode.id,
             ownerID: outputNode.owner,
-            obj: outputNode.__obj,
+            obj: outputNode.__obj as BaseIONodeOutput,
         }, {
             nodeID: inputNode.id,
-            ownerID: inputNode.id,
-            obj: inputNode.__obj,
+            ownerID: inputNode.owner,
+            obj: inputNode.__obj as BaseIONodeInput,
         });
         ConnectionSingleton.attach(conn);
     }

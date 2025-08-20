@@ -7,11 +7,13 @@ import { AppLayers } from "../types";
 import { NodeSpaceContext, defaultSpaceContext } from "./NodeSpaceContext";
 import type NodeConnection from "../classes/NodeConnection";
 import ConnectionSingleton from "../classes/handlers/ConnectionSingleton";
+import Coordinate from "../classes/Coordinate";
 
 export default function NodeSpace() {
     const ref = useRef<HTMLDivElement>(null);
     const canvasRef = useRef<HTMLCanvasElement>(null);
     const shouldCanvasRedraw = useRef<boolean>(false);
+    const canvasOffset = useRef<Coordinate>(new Coordinate());
     const [ nodeSpaceState, setNodeSpaceState ] = useState<React.ReactElement<BaseNodeInstance>[]>([]);
     const [ nodeConnections, setNodeConnections ] = useState<NodeConnection[]>(ConnectionSingleton.getConnections());
 
@@ -38,6 +40,8 @@ export default function NodeSpace() {
             // In theory, this should only redraw when necessary. Might be too good to be true, keep an eye on it
             ctx.clearRect(0, 0, ctx.canvas.width, ctx.canvas.height);
 
+            nodeConnections.map(conn => conn.render(ctx, canvasOffset.current));
+
             shouldCanvasRedraw.current = false;
         }
     }
@@ -46,6 +50,11 @@ export default function NodeSpace() {
         const canvas = canvasRef.current;
         const ctx = canvas?.getContext('2d');
         let animationFrame: number;
+
+        if (canvas) {
+            const bbox = canvas.getBoundingClientRect();
+            canvasOffset.current = new Coordinate(bbox.x, bbox.y);
+        }
 
         if (ctx) {
             if (ref.current) {
@@ -77,16 +86,24 @@ export default function NodeSpace() {
         }
     }, []);
 
-    useEffect(() => {
+    useEffect(() => { // Subscribing and unsubscribing to events
         const handleNodeConnectionUpdate = () => {
             setNodeConnections(ConnectionSingleton.getConnections());
+            shouldCanvasRedraw.current = true;
         }
-        ConnectionSingleton.observable.subscribe(handleNodeConnectionUpdate);
+
+        const handleNodeDrawUpdate = () => {
+            shouldCanvasRedraw.current = true;
+        }
+
+        ConnectionSingleton.events.on(['connectionAttach', 'connectionDetach'], handleNodeConnectionUpdate);
+        ConnectionSingleton.events.on(['connectionUpdate'], handleNodeDrawUpdate)
 
         return () => {
-            ConnectionSingleton.observable.unsubscribe(handleNodeConnectionUpdate);
+            ConnectionSingleton.events.off(['connectionAttach', 'connectionDetach'], handleNodeConnectionUpdate);
+            ConnectionSingleton.events.off(['connectionUpdate'], handleNodeDrawUpdate);
         }
-    }, [ConnectionSingleton.observable]);
+    }, [ConnectionSingleton.events]);
 
     return (
         <NodeSpaceContext.Provider value={appCtx}>

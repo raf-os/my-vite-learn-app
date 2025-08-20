@@ -7,6 +7,7 @@ import Coordinate from "./Coordinate";
 import { configNodeData } from "../utils";
 import { AppLayers, type IONodeProps } from "../types";
 import { Grip } from "lucide-react";
+import ConnectionSingleton from "./handlers/ConnectionSingleton";
 
 export interface BaseNodeInstanceProps extends PrimitiveDraggableProps {
     _id: string,
@@ -104,6 +105,12 @@ export default class BaseNodeInstance<
             (relativePos?.pos.y || 0) - this.dragDelta.y
         );
         this.updatePosition(newPos);
+    }
+
+    componentDidUpdate({}, prevState: Readonly<Q>): void {
+        if (!this.state.pos.equals(prevState.pos)) {
+            ConnectionSingleton.onNodeBlockInstanceMove(this._id);
+        }
     }
 
     innerJSX(): React.ReactNode {

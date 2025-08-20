@@ -5,7 +5,7 @@ import { configNodeData, getTopmostDropTarget } from "../utils";
 import { NodeInstanceContext } from "../components/NodeInstanceContext";
 import Coordinate from "./Coordinate";
 import { cn } from "@/lib/utils";
-import { createElement, useEffect, useState, useRef } from "react";
+import { createElement, useEffect, useState, useRef, createRef } from "react";
 import { createPortal } from "react-dom";
 import { v4 as uuid } from "uuid";
 import { monitorForElements, type draggable } from "@atlaskit/pragmatic-drag-and-drop/element/adapter";
@@ -46,6 +46,7 @@ export default function BaseIONode(props: Omit<BaseIONodeProps, "_id">) {
 export class BaseIONodeInput extends PrimitiveDroppable<'io-node', BaseIONodeProps, BaseInputNodeState> {
     _id: string;
     className = "flex gap-1 justify-baseline items-center text-xs font-semibold";
+    handleRef = createRef<HTMLDivElement>();
     fnOverrides: Partial<DropTargetArgs<ElementDragType>> = {
         onDropTargetChange: (payload) => {
             const target = getTopmostDropTarget(payload.location);
@@ -123,6 +124,7 @@ export class BaseIONodeInput extends PrimitiveDroppable<'io-node', BaseIONodePro
                         this.state.isDragValid && "inset-ring-green-500",
                         this.state.isOver && "inset-ring-blue-400"
                     )}
+                    ref={this.handleRef}
                 />
                 <NodeLabel
                     className={cn(

@@ -1,6 +1,7 @@
 import type { IONodeTypes } from "./classes/BaseIONode";
 import type { BaseNodeInstanceProps } from "./classes/BaseNodeInstance";
 import type { BaseEventPayload, ElementDragType } from "@atlaskit/pragmatic-drag-and-drop/types";
+import type Coordinate from "./classes/Coordinate";
 
 export type TInstanceProps<T extends BaseNodeInstanceProps> = Omit<T, "initialPos" | "_id">;
 
@@ -68,5 +69,5 @@ export type ExtractNodeType<T extends string> = T extends NodeTypes ? Extract<Bl
 export type NarrowByType<TUnion, TType extends string> = TUnion extends { type: TType } ? TUnion : never;
 
 export interface ICanvasRenderable {
-    render: (ctx: CanvasRenderingContext2D) => void;
+    render: (ctx: CanvasRenderingContext2D, baseOffset: Coordinate) => void;
 }
