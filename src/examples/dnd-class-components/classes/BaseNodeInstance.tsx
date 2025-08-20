@@ -98,6 +98,15 @@ export default class BaseNodeInstance<
         });
     }
 
+    updateDraggingStyle(isDragging: boolean): void {
+        if (isDragging) {
+            this.dragStyle = {
+                outline: "4px solid var(--color-blue-500)",
+                outlineOffset: "3px",
+            }
+        } else this.dragStyle = {}
+    }
+
     onSpaceDrop({}, relativePositions: EventRelativePayload): void {
         const relativePos = relativePositions.find(item => item.data.type === "node-space");
         const newPos = new Coordinate(

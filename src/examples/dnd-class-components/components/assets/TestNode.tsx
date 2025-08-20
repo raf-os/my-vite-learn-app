@@ -3,7 +3,6 @@ import BaseNodeInstance from "../../classes/BaseNodeInstance";
 import type { TInstanceProps } from "../../types";
 
 export default function TestNode() {
-
     const instanceProps: TInstanceProps<TestNodeInstance['props']> = {
         header: 'Test Node Instance',
         inputs: [{
@@ -15,11 +14,9 @@ export default function TestNode() {
             name: 'output-0'
         }],
         children: (
-            <>
             <div>
                 Test node instance.
             </div>
-            </>
         ),
     }
 

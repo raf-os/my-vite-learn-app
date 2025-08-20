@@ -120,7 +120,7 @@ export class BaseIONodeInput extends PrimitiveDroppable<'io-node', BaseIONodePro
             <>
                 <NodeElement
                     className={cn(
-                        "bg-transparent inset-ring-3",
+                        "inset-ring-3 bg-neutral-50",
                         this.state.isDragValid && "inset-ring-green-500",
                         this.state.isOver && "inset-ring-blue-400"
                     )}
@@ -231,7 +231,7 @@ function NodeElement({
     return (
         <div
             className={cn(
-                "size-4 bg-neutral-950 rounded-full",
+                "size-4 bg-neutral-950 rounded-full z-11",
                 className
             )}
             ref={ref}
@@ -295,6 +295,7 @@ function DragPreview({ label } : DragPreviewProps) {
             style={{
                 pointerEvents: "none",
                 transform: `translate3d(${curPos.x}px, ${curPos.y}px, 0)`,
+                zIndex: 50,
                 position: "absolute",
                 top: "0",
                 left: "0",

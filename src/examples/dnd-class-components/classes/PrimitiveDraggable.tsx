@@ -91,9 +91,9 @@ export abstract class PrimitiveDraggable<
         });
     }
 
-    updateDraggingStyle(newState: boolean) {
+    updateDraggingStyle(isDragging: boolean) {
         this.dragStyle = {
-            opacity: newState ? "50%" : "100%",
+            opacity: isDragging ? "50%" : "100%",
         }
     }
 

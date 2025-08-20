@@ -1,5 +1,5 @@
-import type NodeConnection from "../NodeConnection";
-import { Observable, EventBus } from "../Observable";
+import NodeConnection from "../NodeConnection";
+import { EventBus } from "../Observable";
 
 let connections: NodeConnection[] = [];
 
@@ -21,6 +21,14 @@ const ConnectionSingleton = {
     detach(conn: NodeConnection) {
         connections = connections.filter(c => c !== conn);
         this.events.emit('connectionDetach', undefined);
+    },
+
+    getById(id: string) {
+        return connections.find(conn => conn.id === id);
+    },
+
+    getByOwner(ownerId: string) {
+        return connections.filter(conn => (conn.source.ownerID === ownerId || conn.target.ownerID === ownerId));
     },
 
     removeByID(id: string) {
