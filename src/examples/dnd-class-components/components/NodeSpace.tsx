@@ -5,12 +5,15 @@ import { dropTargetForElements } from "@atlaskit/pragmatic-drag-and-drop/element
 import { configNodeData } from "../utils";
 import { AppLayers } from "../types";
 import { NodeSpaceContext, defaultSpaceContext } from "./NodeSpaceContext";
+import type NodeConnection from "../classes/NodeConnection";
+import ConnectionSingleton from "../classes/handlers/ConnectionSingleton";
 
 export default function NodeSpace() {
     const ref = useRef<HTMLDivElement>(null);
     const canvasRef = useRef<HTMLCanvasElement>(null);
     const shouldCanvasRedraw = useRef<boolean>(false);
     const [ nodeSpaceState, setNodeSpaceState ] = useState<React.ReactElement<BaseNodeInstance>[]>([]);
+    const [ nodeConnections, setNodeConnections ] = useState<NodeConnection[]>(ConnectionSingleton.getConnections());
 
     const blockData = configNodeData({
         type: "node-space",
@@ -73,6 +76,17 @@ export default function NodeSpace() {
             });
         }
     }, []);
+
+    useEffect(() => {
+        const handleNodeConnectionUpdate = () => {
+            setNodeConnections(ConnectionSingleton.getConnections());
+        }
+        ConnectionSingleton.observable.subscribe(handleNodeConnectionUpdate);
+
+        return () => {
+            ConnectionSingleton.observable.unsubscribe(handleNodeConnectionUpdate);
+        }
+    }, [ConnectionSingleton.observable]);
 
     return (
         <NodeSpaceContext.Provider value={appCtx}>

@@ -1,5 +1,7 @@
 import { PrimitiveDraggable, type EventRelativePayload, type PrimitiveDraggableProps, type PrimitiveDraggableState } from "./PrimitiveDraggable";
 import { NodeSpaceContext } from "../components/NodeSpaceContext";
+import InstanceIOHandler from "./handlers/InstanceIOHandler";
+import { NodeInstanceContext, type INodeInstanceContext } from "../components/NodeInstanceContext";
 import BaseIONode from "./BaseIONode";
 import Coordinate from "./Coordinate";
 import { configNodeData } from "../utils";
@@ -25,6 +27,8 @@ export default class BaseNodeInstance<
     className: string = "absolute flex flex-col bg-neutral-50 rounded-box overflow-hidden";
     myInputs: React.ReactElement<typeof BaseIONode>[] = [];
     myOutputs: React.ReactElement<typeof BaseIONode>[] = [];
+    handler: InstanceIOHandler;
+    _ctx: INodeInstanceContext;
     static contextType = NodeSpaceContext;
     declare context: React.ContextType<typeof NodeSpaceContext>;
 
@@ -36,6 +40,11 @@ export default class BaseNodeInstance<
             ...this.state,
             pos: props.initialPos,
         };
+
+        this.handler = new InstanceIOHandler(this._id);
+        this._ctx = {
+            ioHandler: this.handler,
+        }
 
         if (props.inputs) { // Almost duplicated code, maybe look into fixing
             this.myInputs = props.inputs.map((i, idx) => (
@@ -99,7 +108,7 @@ export default class BaseNodeInstance<
 
     innerJSX(): React.ReactNode {
         return (
-            <>
+            <NodeInstanceContext.Provider value={this._ctx}>
                 <div
                     ref={this.handleRef}
                     className="flex items-center gap-2 p-2 bg-slate-700 text-neutral-50 cursor-pointer select-none"
@@ -124,7 +133,7 @@ export default class BaseNodeInstance<
                     { this.myInputs }
                     { this.myOutputs }
                 </div>
-            </>
+            </NodeInstanceContext.Provider>
         )
     }
 }

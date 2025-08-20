@@ -1,3 +1,4 @@
+import type { IONodeTypes } from "./classes/BaseIONode";
 import type { BaseNodeInstanceProps } from "./classes/BaseNodeInstance";
 import type { BaseEventPayload, ElementDragType } from "@atlaskit/pragmatic-drag-and-drop/types";
 
@@ -31,12 +32,13 @@ interface NodeSpace extends BaseBlockData {
     type: 'node-space',
 }
 
-interface IONode extends BaseBlockData {
+export interface IONode extends BaseBlockData {
     type: 'io-node',
     strat: 'input' | 'output',
     dataType: IONodeProps['datatype'],
     id: string,
     owner: string,
+    __obj: IONodeTypes,
 }
 
 interface AbstractNodeBlock extends BaseBlockData {
@@ -64,3 +66,7 @@ export type NodeTypes = BlockData[`type`];
 export type ExtractNodeType<T extends string> = T extends NodeTypes ? Extract<BlockData, { type: T }> : AbstractNodeBlock;
 
 export type NarrowByType<TUnion, TType extends string> = TUnion extends { type: TType } ? TUnion : never;
+
+export interface ICanvasRenderable {
+    render: (ctx: CanvasRenderingContext2D) => void;
+}

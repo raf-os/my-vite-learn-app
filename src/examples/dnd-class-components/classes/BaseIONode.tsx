@@ -1,7 +1,8 @@
-import { PrimitiveDraggable, type PrimitiveDraggableProps, type PrimitiveDraggableState } from "./PrimitiveDraggable";
+import { PrimitiveDraggable, type EventRelativePayload, type PrimitiveDraggableProps, type PrimitiveDraggableState } from "./PrimitiveDraggable";
 import { PrimitiveDroppable, type PrimitiveDroppableState } from "./PrimitiveDroppable";
-import { AppLayers, type EvPayload, type NodeTypes, type ExtractNodeType, type IONodeProps } from "../types";
+import { AppLayers, type EvPayload, type NodeTypes, type ExtractNodeType, type IONodeProps, type IONode, type BlockData } from "../types";
 import { configNodeData, getTopmostDropTarget } from "../utils";
+import { NodeInstanceContext } from "../components/NodeInstanceContext";
 import Coordinate from "./Coordinate";
 import { cn } from "@/lib/utils";
 import { createElement, useEffect, useState, useRef } from "react";
@@ -11,6 +12,7 @@ import { monitorForElements, type draggable } from "@atlaskit/pragmatic-drag-and
 import { disableNativeDragPreview } from "@atlaskit/pragmatic-drag-and-drop/element/disable-native-drag-preview";
 import { preventUnhandled } from "@atlaskit/pragmatic-drag-and-drop/prevent-unhandled";
 import type { DropTargetArgs, ElementDragType } from "@atlaskit/pragmatic-drag-and-drop/dist/types/internal-types";
+import type InstanceIOHandler from "./handlers/InstanceIOHandler";
 
 export interface BaseIONodeProps extends Omit<PrimitiveDraggableProps, "datatype">, IONodeProps {
     _id: string,
@@ -40,6 +42,7 @@ export default function BaseIONode(props: Omit<BaseIONodeProps, "_id">) {
     } else return <></>;
 }
 
+// TODO: Maybe create another base class to be inherited, to reduce duplicated code
 export class BaseIONodeInput extends PrimitiveDroppable<'io-node', BaseIONodeProps, BaseInputNodeState> {
     _id: string;
     className = "flex gap-1 justify-baseline items-center text-xs font-semibold";
@@ -52,6 +55,9 @@ export class BaseIONodeInput extends PrimitiveDroppable<'io-node', BaseIONodePro
             else { this.updateState({isOver: false}) }
         }
     };
+    instanceHandler?: InstanceIOHandler;
+    static contextType = NodeInstanceContext;
+    declare context: React.ContextType<typeof NodeInstanceContext>;
 
     constructor(props: BaseIONodeProps) {
         super(props);
@@ -70,6 +76,7 @@ export class BaseIONodeInput extends PrimitiveDroppable<'io-node', BaseIONodePro
             dataType: this.props.datatype,
             id: this.props._id,
             owner: this.props.owner,
+            __obj: this,
         });
     }
 
@@ -94,6 +101,17 @@ export class BaseIONodeInput extends PrimitiveDroppable<'io-node', BaseIONodePro
             onDragStart: (payload) => this.onDragStart(payload),
             onDrop: (payload) => this.onDrop(payload),
         }));
+        this.instanceHandler = this.context.ioHandler;
+        this.instanceHandler?.register({
+            element: this.droppableRef.current,
+            id: this.props._id,
+            obj: this,
+        });
+    }
+
+    componentWillUnmount(): void {
+        super.componentWillUnmount();
+        this.instanceHandler?.unregister(this.props._id);
     }
 
     innerJSX(): React.ReactNode {
@@ -127,6 +145,9 @@ export class BaseIONodeOutput extends PrimitiveDraggable<'io-node', BaseIONodePr
             disableNativeDragPreview({ nativeSetDragImage });
         }
     }
+    instanceHandler?: InstanceIOHandler;
+    static contextType = NodeInstanceContext;
+    declare context: React.ContextType<typeof NodeInstanceContext>;
 
     constructor(props: BaseIONodeProps) {
         super(props);
@@ -146,12 +167,39 @@ export class BaseIONodeOutput extends PrimitiveDraggable<'io-node', BaseIONodePr
             dataType: this.props.datatype,
             id: this._id,
             owner: this.props.owner,
+            __obj: this,
         });
     }
 
     onDragStart(payload: EvPayload): void {
         super.onDragStart(payload);
         preventUnhandled.start();
+    }
+
+    onSpaceDrop(payload: EvPayload, relativePositions: EventRelativePayload): void {
+        const target = getTopmostDropTarget(payload.location);
+        if (target?.data) {
+            const tData = target.data as BlockData;
+            if (tData.type === "io-node" && tData.owner !== this.props.owner && tData.dataType === this.props.datatype) {
+                this.instanceHandler?.connect(this.nodeData, tData);
+            }
+        }
+    }
+
+    componentDidMount(): void {
+        super.componentDidMount();
+        this.instanceHandler = this.context.ioHandler;
+        this.instanceHandler?.register({
+            element: this.draggableRef.current,
+            id: this.props._id,
+            obj: this,
+        });
+        this.nodeData.__obj = this;
+    }
+
+    componentWillUnmount(): void {
+        super.componentWillUnmount();
+        this.instanceHandler?.unregister(this.props._id);
     }
 
     innerJSX(): React.ReactNode {
@@ -243,10 +291,11 @@ function DragPreview({ label } : DragPreviewProps) {
     return (
         <div
             style={{
+                pointerEvents: "none",
                 transform: `translate3d(${curPos.x}px, ${curPos.y}px, 0)`,
                 position: "absolute",
                 top: "0",
-                left: "0"
+                left: "0",
             }}
         >
             <div
@@ -258,3 +307,5 @@ function DragPreview({ label } : DragPreviewProps) {
         </div>
     )
 }
+
+export type IONodeTypes = BaseIONodeInput | BaseIONodeOutput;
