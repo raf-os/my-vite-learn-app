@@ -84,6 +84,7 @@ export default function NodeSpace() {
                 <p>After doing much of this I realized a lot could be done with function components as well. Oh well.</p>
             </div>
         ) });
+        
         if (ref.current) {
             const el = ref.current;
 

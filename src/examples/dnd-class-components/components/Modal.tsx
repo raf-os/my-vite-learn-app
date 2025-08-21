@@ -23,21 +23,31 @@ export const ModalSingleton = {
 
 export default function Modal() {
     const [ isShowing, setIsShowing ] = useState<boolean>(false);
-    const [ isOpen, setIsOpen ] = useState<boolean>(false);
     const [ messageJsx, setMessageJsx ] = useState<React.ReactNode>(null);
     const elRef = useRef<HTMLDivElement>(null);
 
-    const style = {
-    } as React.CSSProperties;
+    let style = { display: "none" } as React.CSSProperties;
 
     const onModalOpenRequest = (payload: TModalObservable) => {
         setMessageJsx(payload.data);
         setIsShowing(true);
-        setIsOpen(true);
+        toggle(true);
     }
 
     const onModalCloseRequest = () => {
         setIsShowing(false);
+    }
+
+    const onTransitionEnd = () => {
+        if (!isShowing) {
+            toggle(false);
+        }
+    }
+
+    const toggle = (t: boolean) => { // No way that I have to do this, see if there's a better way
+        if (elRef.current) {
+            elRef.current.style = `display: ${t ? `flex` : `none`}`;
+        }
     }
 
     useEffect(() => {
@@ -46,19 +56,13 @@ export default function Modal() {
 
     useEffect(() => {
         if (elRef.current) {
-            const onTransitionEnd = () => {
-                if (!isShowing) {
-                    setIsOpen(false);
-                }
-            }
-
             elRef.current.addEventListener("transitionend", onTransitionEnd);
 
             return () => elRef.current?.removeEventListener("transitionend", onTransitionEnd);
         }
     }, [isShowing]);
 
-    return isOpen ? (
+    return (
         <div
             className="modal-component"
             style={style}
@@ -67,6 +71,10 @@ export default function Modal() {
         >
             <div
                 className="bg-neutral-50 border border-neutral-400 rounded-box items-center max-w-[600px]"
+                style={{
+                        scale: isShowing ? "100%" : "75%",
+                        transition: "scale 0.2s ease",
+                    }}
             >
                 <div
                     className="flex flex-col gap-2 items-center px-4 py-3"
@@ -82,5 +90,5 @@ export default function Modal() {
                 </div>
             </div>
         </div>
-    ) : null;
+    );
 }
