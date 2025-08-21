@@ -8,6 +8,7 @@ import { NodeSpaceContext, defaultSpaceContext } from "./NodeSpaceContext";
 import type NodeConnection from "../classes/NodeConnection";
 import ConnectionSingleton from "../classes/handlers/ConnectionSingleton";
 import Coordinate from "../classes/Coordinate";
+import Modal, { ModalSingleton } from "./Modal";
 
 export default function NodeSpace() {
     const ref = useRef<HTMLDivElement>(null);
@@ -76,6 +77,13 @@ export default function NodeSpace() {
     }, [draw]);
 
     useEffect(() => {
+        ModalSingleton.create({ data: (
+            <div className="flex flex-col gap-2 text-neutral-800">
+                <p>Node-based programming using react class components. Drag nodes from the right side and drop them anywhere within this grid frame.</p>
+                <p>Connect outputs from one node to inputs from another node.</p>
+                <p>After doing much of this I realized a lot could be done with function components as well. Oh well.</p>
+            </div>
+        ) });
         if (ref.current) {
             const el = ref.current;
 
@@ -126,6 +134,8 @@ export default function NodeSpace() {
                 </div>
 
                 <NodePanel />
+
+                <Modal />
             </div>
         </NodeSpaceContext.Provider>
     )

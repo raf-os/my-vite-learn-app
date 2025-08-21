@@ -302,7 +302,7 @@ function DragPreview({ label } : DragPreviewProps) {
             }}
         >
             <div
-                className="-translate-x-1/2 -translate-y-1/2 bg-slate-700 text-neutral-50 text-sm font-bold p-1 rounded-box"
+                className="-translate-x-full -translate-y-1/2 bg-slate-700 text-neutral-50 text-sm font-bold p-1 rounded-box"
                 ref={labelRef}
             >
                 { label }

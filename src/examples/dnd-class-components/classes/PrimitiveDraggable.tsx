@@ -36,6 +36,10 @@ export abstract class PrimitiveDraggable<
     constructor(props: U) {
         super(props);
         this.nodeData = this.setupData() as NarrowByType<BlockData, T>;
+        this.state = {
+            ...this.state,
+            isDragging: false,
+        }
     }
 
     updateState<K extends keyof V>(newObj: Pick<V, K>) {
