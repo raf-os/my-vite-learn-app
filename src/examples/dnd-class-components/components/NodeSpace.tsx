@@ -40,14 +40,13 @@ export default function NodeSpace() {
     }
 
     const draw = (ctx: CanvasRenderingContext2D) => {
-        if (shouldCanvasRedraw.current === true) {
-            // In theory, this should only redraw when necessary. Might be too good to be true, keep an eye on it
-            ctx.clearRect(0, 0, ctx.canvas.width, ctx.canvas.height);
+        // Todo: only redraw when necessary, previous attempt failed
+        // Maybe batch together draw operations? Look into this
+        ctx.clearRect(0, 0, ctx.canvas.width, ctx.canvas.height);
 
-            nodeConnections.map(conn => conn.render(ctx, canvasOffset.current));
+        nodeConnections.map(conn => conn.render(ctx, canvasOffset.current));
 
-            shouldCanvasRedraw.current = false;
-        }
+        shouldCanvasRedraw.current = false;
     }
 
     useEffect(() => {
@@ -94,8 +93,9 @@ export default function NodeSpace() {
 
     useEffect(() => { // Subscribing and unsubscribing to events
         const handleNodeConnectionUpdate = () => {
-            setNodeConnections(ConnectionSingleton.getConnections());
             shouldCanvasRedraw.current = true;
+            const connections = ConnectionSingleton.getConnections();
+            setNodeConnections(connections);
         }
 
         const handleNodeDrawUpdate = () => {

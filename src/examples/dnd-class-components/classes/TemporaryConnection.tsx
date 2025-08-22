@@ -16,11 +16,16 @@ export default class TemporaryNodeConnection implements ICanvasRenderable {
         const { x, y, width, height } = nodeObj.getBoundingClientRect();
         this.initialPos = new Coordinate(x + width / 2, y + height / 2);
         this.targetPos = this.initialPos;
+        ConnectionSingleton.attach(this);
     }
 
     updatePositions(newPos: Coordinate) {
         this.targetPos = newPos;
         ConnectionSingleton.events.emit('connectionUpdate', undefined);
+    }
+
+    kill() {
+        ConnectionSingleton.detach(this);
     }
 
     render(ctx: CanvasRenderingContext2D, baseOffset: Coordinate = new Coordinate()) {

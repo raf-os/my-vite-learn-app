@@ -24,8 +24,8 @@ export interface BaseNodeInstanceState extends PrimitiveDraggableState {
 export default class BaseNodeInstance<
     T extends BaseNodeInstanceProps = BaseNodeInstanceProps,
     Q extends BaseNodeInstanceState = BaseNodeInstanceState> extends PrimitiveDraggable<'node-instance', T, Q> {
-    _id: string;
-    className: string = "absolute flex flex-col bg-neutral-50 rounded-box overflow-hidden";
+    _id: Readonly<string>;
+    className: string = "absolute flex flex-col bg-neutral-50 rounded-box overflow-hidden z-0";
     myInputs: React.ReactElement<typeof BaseIONode>[] = [];
     myOutputs: React.ReactElement<typeof BaseIONode>[] = [];
     handler: InstanceIOHandler;

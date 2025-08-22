@@ -301,11 +301,9 @@ function DragPreview({ label, parentRef } : DragPreviewProps) {
     useEffect(() => {
         if (parentRef) {
             canvasTempConnection.current = createTemporaryNodeConnection(parentRef);
-            ConnectionSingleton.attach(canvasTempConnection.current);
 
             return () => {
-                ConnectionSingleton.detach(canvasTempConnection.current!);
-                canvasTempConnection.current = undefined;
+                canvasTempConnection.current?.kill();
             }
         }
     }, [parentRef]);
