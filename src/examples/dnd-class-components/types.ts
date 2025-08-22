@@ -69,5 +69,13 @@ export type ExtractNodeType<T extends string> = T extends NodeTypes ? Extract<Bl
 export type NarrowByType<TUnion, TType extends string> = TUnion extends { type: TType } ? TUnion : never;
 
 export interface ICanvasRenderable {
+    id: string;
     render: (ctx: CanvasRenderingContext2D, baseOffset: Coordinate) => void;
+    updatePositions: (...args: any) => void;
+}
+
+export interface NodeConnectionData<T extends IONodeTypes = IONodeTypes> {
+    nodeID: string,
+    ownerID: string,
+    obj: T;
 }

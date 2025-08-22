@@ -3,12 +3,15 @@ import BaseNodeInstance from "../classes/BaseNodeInstance";
 import { useState, useRef, useEffect } from "react";
 import { dropTargetForElements } from "@atlaskit/pragmatic-drag-and-drop/element/adapter";
 import { configNodeData } from "../utils";
-import { AppLayers } from "../types";
+import { AppLayers, type ICanvasRenderable } from "../types";
 import { NodeSpaceContext, defaultSpaceContext } from "./NodeSpaceContext";
-import type NodeConnection from "../classes/NodeConnection";
 import ConnectionSingleton from "../classes/handlers/ConnectionSingleton";
 import Coordinate from "../classes/Coordinate";
+
 import Modal, { ModalSingleton } from "./Modal";
+import AboutModal from "./modal-messages/About";
+
+import AppMenuBar from "./AppMenuBar";
 
 export default function NodeSpace() {
     const ref = useRef<HTMLDivElement>(null);
@@ -16,7 +19,7 @@ export default function NodeSpace() {
     const shouldCanvasRedraw = useRef<boolean>(false);
     const canvasOffset = useRef<Coordinate>(new Coordinate());
     const [ nodeSpaceState, setNodeSpaceState ] = useState<React.ReactElement<BaseNodeInstance>[]>([]);
-    const [ nodeConnections, setNodeConnections ] = useState<NodeConnection[]>(ConnectionSingleton.getConnections());
+    const [ nodeConnections, setNodeConnections ] = useState<ICanvasRenderable[]>(ConnectionSingleton.getConnections());
 
     const blockData = configNodeData({
         type: "node-space",
@@ -77,13 +80,7 @@ export default function NodeSpace() {
     }, [draw]);
 
     useEffect(() => {
-        ModalSingleton.create({ data: (
-            <div className="flex flex-col gap-2 text-neutral-800">
-                <p>Node-based programming using react class components. Drag nodes from the right side and drop them anywhere within this grid frame.</p>
-                <p>Connect outputs from one node to inputs from another node.</p>
-                <p>After doing much of this I realized a lot could be done with function components as well. Oh well.</p>
-            </div>
-        ) });
+        ModalSingleton.create(AboutModal);
         
         if (ref.current) {
             const el = ref.current;
@@ -116,25 +113,29 @@ export default function NodeSpace() {
 
     return (
         <NodeSpaceContext.Provider value={appCtx}>
-            <div
-                className="w-full h-full relative"
-                data-slot="app-space"
-            >
-                <canvas
-                    id="appCanvasOverlay"
-                    className="z-10 absolute top-0 left-0 pointer-events-none"
-                    ref={canvasRef}
-                />
+            <div className="flex flex-col relative w-full h-full">
+                <AppMenuBar />
 
                 <div
-                    className="relative w-full h-full"
-                    id="appNodeSpaceState"
-                    ref={ref}
+                    className="w-full h-full relative"
+                    data-slot="app-space"
                 >
-                    { nodeSpaceState }
-                </div>
+                    <canvas
+                        id="appCanvasOverlay"
+                        className="z-10 absolute top-0 left-0 pointer-events-none"
+                        ref={canvasRef}
+                    />
 
-                <NodePanel />
+                    <div
+                        className="relative w-full h-full"
+                        id="appNodeSpaceState"
+                        ref={ref}
+                    >
+                        { nodeSpaceState }
+                    </div>
+                    
+                    <NodePanel />
+                </div>
 
                 <Modal />
             </div>

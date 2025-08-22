@@ -14,6 +14,9 @@ import { preventUnhandled } from "@atlaskit/pragmatic-drag-and-drop/prevent-unha
 import type { DropTargetArgs, ElementDragType } from "@atlaskit/pragmatic-drag-and-drop/dist/types/internal-types";
 import type InstanceIOHandler from "./handlers/InstanceIOHandler";
 
+import ConnectionSingleton, { createTemporaryNodeConnection } from "./handlers/ConnectionSingleton";
+import type TemporaryNodeConnection from "./TemporaryConnection";
+
 export interface BaseIONodeProps extends Omit<PrimitiveDraggableProps, "datatype">, IONodeProps {
     _id: string,
     owner: string,
@@ -212,7 +215,7 @@ export class BaseIONodeOutput extends PrimitiveDraggable<'io-node', BaseIONodePr
                 </NodeLabel>
                 <NodeElement ref={this.handleRef} />
                 { this.state.isDragging && createPortal(
-                    <DragPreview label={this.props.name} />,
+                    <DragPreview label={this.props.name} parentRef={this.handleRef.current} />,
                     document.body
                 ) }
             </>
@@ -260,12 +263,14 @@ function NodeLabel({
 
 type DragPreviewProps = {
     label: string,
+    parentRef: HTMLDivElement | null;
 } & React.ComponentPropsWithRef<'div'>;
 
-function DragPreview({ label } : DragPreviewProps) {
+function DragPreview({ label, parentRef } : DragPreviewProps) {
     const [ curPos, setCurPos ] = useState<Coordinate>(new Coordinate(0, 0));
     const [ dimensions, setDimensions ] = useState<Coordinate>(new Coordinate());
     const labelRef = useRef<HTMLDivElement>(null);
+    const canvasTempConnection = useRef<TemporaryNodeConnection | undefined>(undefined);
 
     const updateDrag = (payload: EvPayload) => {
         const { clientX: cx, clientY: cy } = payload.location.current.input;
@@ -274,13 +279,16 @@ function DragPreview({ label } : DragPreviewProps) {
             Math.max(cy, dimensions.y)
         );
         setCurPos(newPos);
+        if (canvasTempConnection.current) {
+            canvasTempConnection.current.updatePositions(newPos);
+        }
     }
 
     useEffect(() => {
         return monitorForElements({
             onDrag: (payload) => updateDrag(payload),
         })
-    });
+    }, [canvasTempConnection]);
 
     useEffect(() => {
         if (labelRef.current) {
@@ -289,6 +297,18 @@ function DragPreview({ label } : DragPreviewProps) {
             setDimensions(d);
         }
     }, []);
+
+    useEffect(() => {
+        if (parentRef) {
+            canvasTempConnection.current = createTemporaryNodeConnection(parentRef);
+            ConnectionSingleton.attach(canvasTempConnection.current);
+
+            return () => {
+                ConnectionSingleton.detach(canvasTempConnection.current!);
+                canvasTempConnection.current = undefined;
+            }
+        }
+    }, [parentRef]);
 
     return (
         <div
@@ -302,7 +322,7 @@ function DragPreview({ label } : DragPreviewProps) {
             }}
         >
             <div
-                className="-translate-x-full -translate-y-1/2 bg-slate-700 text-neutral-50 text-sm font-bold p-1 rounded-box"
+                className="translate-x-[12px] -translate-y-1/2 bg-slate-700 text-neutral-50 text-sm font-bold p-1 rounded-box"
                 ref={labelRef}
             >
                 { label }

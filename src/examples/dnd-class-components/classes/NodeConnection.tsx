@@ -1,13 +1,7 @@
-import type { IONodeTypes, BaseIONodeInput, BaseIONodeOutput } from "./BaseIONode";
+import type { BaseIONodeInput, BaseIONodeOutput } from "./BaseIONode";
 import { v4 as uuid } from "uuid";
-import type { ICanvasRenderable } from "../types";
+import type { ICanvasRenderable, NodeConnectionData } from "../types";
 import Coordinate from "./Coordinate";
-
-export interface NodeConnectionData<T extends IONodeTypes = IONodeTypes> {
-    nodeID: string,
-    ownerID: string,
-    obj: T;
-}
 
 export default class NodeConnection implements ICanvasRenderable {
     source: NodeConnectionData<BaseIONodeOutput>;

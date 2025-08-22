@@ -1,8 +1,22 @@
 import { useEffect, useState, useRef } from "react";
 import { Observable } from "../classes/Observable";
+import { X as XIcon } from "lucide-react";
 
-type TModalObservable = {
-    data: React.ReactNode,
+export type TModalObservable = {
+    data: (props: TModalArgs) => React.ReactNode,
+    metadata?: TModalMetadata,
+}
+
+type TModalArgs = {
+    requestClose: () => void,
+    isTransitioning: boolean,
+}
+
+type TModalMetadata = {
+    title?: string,
+    preventOutsideClick?: boolean,
+    hasCloseButton?: boolean,
+    [key: string]: any,
 }
 
 export const ModalSingleton = {
@@ -23,13 +37,15 @@ export const ModalSingleton = {
 
 export default function Modal() {
     const [ isShowing, setIsShowing ] = useState<boolean>(false);
-    const [ messageJsx, setMessageJsx ] = useState<React.ReactNode>(null);
+    const [ messageJsx, setMessageJsx ] = useState<((props: TModalArgs) => React.ReactNode) | null>(() => null);
+    const [ messageMetadata, setMessageMetadata ] = useState<TModalMetadata>({});
     const elRef = useRef<HTMLDivElement>(null);
 
     let style = { display: "none" } as React.CSSProperties;
 
     const onModalOpenRequest = (payload: TModalObservable) => {
-        setMessageJsx(payload.data);
+        setMessageJsx(() => payload.data);
+        setMessageMetadata(payload.metadata || {});
         setIsShowing(true);
         toggle(true);
     }
@@ -44,9 +60,17 @@ export default function Modal() {
         }
     }
 
+    const handleOutsideClick = (e: React.MouseEvent<HTMLDivElement>) => {
+        if (!messageMetadata.preventOutsideClick) {
+            if (e.target === elRef.current && isShowing) {
+                onModalCloseRequest();
+            }
+        }
+    }
+
     const toggle = (t: boolean) => { // No way that I have to do this, see if there's a better way
         if (elRef.current) {
-            elRef.current.style = `display: ${t ? `flex` : `none`}`;
+            elRef.current.style = `visibility: ${t ? `visible` : `collapse`}`;
         }
     }
 
@@ -68,25 +92,38 @@ export default function Modal() {
             style={style}
             data-show={ isShowing ? "true" : "false" }
             ref={elRef}
+            onClick={handleOutsideClick}
         >
             <div
-                className="bg-neutral-50 border border-neutral-400 rounded-box items-center max-w-[600px]"
+                className="rounded-lg items-center max-w-[600px]"
                 style={{
-                        scale: isShowing ? "100%" : "75%",
-                        transition: "scale 0.2s ease",
+                        translate: isShowing ? "0 0" : "0 32px",
+                        opacity: isShowing ? "100%" : "0",
+                        transition: "translate 0.2s ease, opacity 0.2s ease",
                     }}
             >
                 <div
-                    className="flex flex-col gap-2 items-center px-4 py-3"
+                    className="flex items-center w-full rounded-t-lg bg-slate-700 p-2"
                 >
-                    { messageJsx }
-                    <button
-                        onClick={onModalCloseRequest}
-                        disabled={!isShowing}
-                        className="bg-blue-500 hover:bg-blue-700 disabled:bg-neutral-500 text-neutral-50 px-3 py-2 font-bold rounded-box"
+                    <div
+                        className="text-neutral-50 font-semibold grow-1 shrink-1 px-1"
+                        data-slot="modal-title"
                     >
-                        Close
-                    </button>
+                        { messageMetadata.title || "Message" }
+                    </div>
+                    
+                    { messageMetadata.hasCloseButton && (<div
+                        className="closeButton"
+                        onClick={onModalCloseRequest}
+                    >
+                        <XIcon />
+                    </div>)}
+                </div>
+
+                <div
+                    className="flex flex-col gap-2 items-center px-4 py-3 rounded-b-lg border-4 border-t-0 bg-neutral-50 border-slate-700"
+                >
+                    { messageJsx?.({requestClose: onModalCloseRequest, isTransitioning: !isShowing}) }
                 </div>
             </div>
         </div>

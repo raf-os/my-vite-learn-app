@@ -9,6 +9,7 @@
 @layer components {
     .modal-component {
         --bg-opacity: 0;
+        --icon-size: 20px;
 
         background-color: rgb(0 0 0 / var(--bg-opacity));
         display: flex;
@@ -25,6 +26,62 @@
 
         &[data-show="true"]{
             --bg-opacity: 0.5;
+        }
+
+        .closeButton {
+            flex-grow: 0;
+            flex-shrink: 0;
+            cursor: pointer;
+            background: linear-gradient(to bottom, var(--color-red-500) 25%, var(--color-red-700) 80%);
+            border: 1px solid var(--color-red-600);
+            border-radius: 4px;
+            padding: 1px;
+
+            &:hover, &:active {
+                border: 1px solid var(--color-red-400);
+                background: linear-gradient(to bottom, var(--color-red-400), var(--color-red-600));
+            }
+
+            &>svg{
+                stroke: white;
+                stroke-width: 3px;
+                width: var(--icon-size);
+                height: var(--icon-size);
+            }
+        }
+
+        .btn {
+            --drop-shadow: 0 2px 8px -2px rgb(0 0 0 / 75%);
+            align-self: center;
+            background: linear-gradient(to bottom, var(--color-slate-500), var(--color-slate-700));
+            color: var(--color-neutral-50);
+            font-weight: 700;
+            border: 1px solid var(--color-slate-600);
+            padding: 0.5rem 1rem;
+            border-radius: 8px;
+            box-shadow: 0 1px 1px 1px inset color-mix(in oklab, var(--color-slate-300) 50%, transparent), var(--drop-shadow);
+
+            &:hover {
+                --drop-shadow: 0 0 16px 0 var(--color-blue-400);
+                background: linear-gradient(to bottom, var(--color-blue-400), var(--color-blue-500));
+                border: 1px solid var(--color-blue-500);
+            }
+
+            &:active {
+                --drop-shadow: 0 0 transparent;
+                background: linear-gradient(to bottom, var(--color-slate-700), var(--color-slate-600));
+                border: 1px solid var(--color-blue-800);
+                transform: translateY(1px);
+            }
+
+            &:disabled {
+                --drop-shadow: 0 0 transparent;
+                background: none;
+                color: var(--color-neutral-200);
+                background-color: var(--color-neutral-400);
+                border: 1px solid var(--color-neutral-500);
+                transform: none;
+            }
         }
     }
 }

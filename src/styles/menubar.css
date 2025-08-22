@@ -1,0 +1,42 @@
+@import "tailwindcss";
+
+@layer utilities {
+    .menubar {
+        color: var(--color-neutral-50);
+        background-color: var(--color-slate-600);
+        display: flex;
+        width: 100%;
+        padding: 0.5rem .5rem;
+    }
+
+    .menutrigger {
+        padding: 2px .5rem;
+        font-weight: 500;
+        border-radius: var(--radius-lg);
+
+        &:hover, &[data-state="open"] {
+            background-color: rgb(255 255 255 / 25%);
+        }
+    }
+
+    .menucontent {
+        width: 16rem;
+        background-color: var(--color-slate-200);
+        border-radius: var(--radius-lg);
+        display: flex;
+        flex-direction: column;
+        padding: 0;
+        box-shadow: 0 2px 4px 1px rgb(0 0 0 / 50%);
+        overflow: hidden;
+    }
+    
+    .menuitem {
+        color: var(--color-neutral-800);
+        padding: 4px 20px;
+        user-select: none;
+
+        &:hover {
+            background-color: var(--color-slate-300);
+        }
+    }
+}
