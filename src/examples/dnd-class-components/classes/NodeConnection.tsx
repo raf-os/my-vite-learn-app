@@ -44,7 +44,7 @@ export default class NodeConnection implements ICanvasRenderable {
 
         if (!sObj || !tObj) return;
         if (sObj.handleRef.current && tObj.handleRef.current) {
-            ctx.fillStyle = "#000000";
+            ctx.strokeStyle = "#000000";
             ctx.lineWidth = 4;
             ctx.lineCap = "round";
 

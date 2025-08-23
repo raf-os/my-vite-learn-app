@@ -1,15 +1,22 @@
 import { createContext } from "react";
+import { EventBus } from "../classes/Observable";
+
+export type TCtxEventBus = {
+    updateSortOrder: { nodeCount: number, targetId: string, currentIdx: number };
+}
 
 export type TNodeSpaceContext = {
     addNodeToSpace: (newObj: React.ReactElement<any>) => void,
     removeNodeFromSpace: () => void,
-    pushNodeToTop: (id: string) => void,
+    bringNodeToFront: (id: string, currentIdx: number) => void,
+    eventBus: EventBus<TCtxEventBus>,
 }
 
 export const defaultSpaceContext: TNodeSpaceContext = {
     addNodeToSpace: () => {},
     removeNodeFromSpace: () => {},
-    pushNodeToTop: () => {},
+    bringNodeToFront: () => {},
+    eventBus: new EventBus<{}>,
 }
 
 export const NodeSpaceContext = createContext<TNodeSpaceContext>(defaultSpaceContext);

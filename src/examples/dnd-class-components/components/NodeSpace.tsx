@@ -4,8 +4,9 @@ import { useState, useRef, useEffect } from "react";
 import { dropTargetForElements } from "@atlaskit/pragmatic-drag-and-drop/element/adapter";
 import { configNodeData } from "../utils";
 import { AppLayers, type ICanvasRenderable } from "../types";
-import { NodeSpaceContext, defaultSpaceContext } from "./NodeSpaceContext";
+import { NodeSpaceContext, defaultSpaceContext, type TCtxEventBus } from "./NodeSpaceContext";
 import ConnectionSingleton from "../classes/handlers/ConnectionSingleton";
+import { EventBus } from "../classes/Observable";
 import Coordinate from "../classes/Coordinate";
 
 import Modal, { ModalSingleton } from "./Modal";
@@ -20,6 +21,7 @@ export default function NodeSpace() {
     const canvasOffset = useRef<Coordinate>(new Coordinate());
     const [ nodeSpaceState, setNodeSpaceState ] = useState<React.ReactElement<BaseNodeInstance>[]>([]);
     const [ nodeConnections, setNodeConnections ] = useState<ICanvasRenderable[]>(ConnectionSingleton.getConnections());
+    const eventBus = new EventBus<TCtxEventBus>();
 
     const blockData = configNodeData({
         type: "node-space",
@@ -34,9 +36,15 @@ export default function NodeSpace() {
         setNodeSpaceState(newState);
     }
 
+    const bringNodeToFront = (id: string, currentIdx: number) => {
+        eventBus.emit("updateSortOrder", { nodeCount: nodeSpaceState.length, targetId: id, currentIdx: currentIdx });
+    }
+
     const appCtx = {
         ...defaultSpaceContext,
         addNodeToSpace,
+        bringNodeToFront,
+        eventBus: eventBus
     }
 
     const draw = (ctx: CanvasRenderingContext2D) => {
@@ -127,7 +135,7 @@ export default function NodeSpace() {
                     />
 
                     <div
-                        className="relative w-full h-full"
+                        className="relative w-full h-full z-0"
                         id="appNodeSpaceState"
                         ref={ref}
                     >

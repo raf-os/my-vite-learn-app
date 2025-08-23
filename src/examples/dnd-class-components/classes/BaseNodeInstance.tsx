@@ -19,17 +19,19 @@ export interface BaseNodeInstanceProps extends PrimitiveDraggableProps {
 
 export interface BaseNodeInstanceState extends PrimitiveDraggableState {
     pos: Coordinate,
+    zIndex: number,
 }
 
 export default class BaseNodeInstance<
     T extends BaseNodeInstanceProps = BaseNodeInstanceProps,
     Q extends BaseNodeInstanceState = BaseNodeInstanceState> extends PrimitiveDraggable<'node-instance', T, Q> {
     _id: Readonly<string>;
-    className: string = "absolute flex flex-col bg-neutral-50 rounded-box overflow-hidden z-0";
+    className: string = "absolute flex flex-col bg-neutral-50 rounded-box overflow-hidden";
     myInputs: React.ReactElement<typeof BaseIONode>[] = [];
     myOutputs: React.ReactElement<typeof BaseIONode>[] = [];
     handler: InstanceIOHandler;
     _ctx: INodeInstanceContext;
+    _evtBusSubscribe: (...args: any) => void = () => {};
     static contextType = NodeSpaceContext;
     declare context: React.ContextType<typeof NodeSpaceContext>;
 
@@ -40,7 +42,10 @@ export default class BaseNodeInstance<
         this.state = {
             ...this.state,
             pos: props.initialPos,
+            zIndex: this.state.zIndex || 0,
         };
+
+        this.style = { ...this.style, zIndex: this.state.zIndex };
 
         this.handler = new InstanceIOHandler(this._id);
         this._ctx = {
@@ -82,9 +87,29 @@ export default class BaseNodeInstance<
         });
     }
 
+    updateZIndex({nodeCount, targetId, currentIdx}: {nodeCount: number, targetId: string, currentIdx: number}) {
+        if (targetId === this.props._id) {
+            this.updateState({ zIndex: nodeCount });
+        } else if (this.state.zIndex > currentIdx) {
+            this.updateState({ zIndex: Math.max(0, this.state.zIndex - 1) });
+        }
+    }
+
+    bringToFront(): void {
+        this.context.bringNodeToFront(this.props._id, this.state.zIndex);
+    }
+
     componentDidMount(): void {
         super.componentDidMount();
         this.updatePosition(this.props.initialPos);
+        this._evtBusSubscribe = (...args: Parameters<typeof this.updateZIndex>) => this.updateZIndex(...args);
+        this.context.eventBus.on("updateSortOrder", this._evtBusSubscribe);
+        this.bringToFront();
+    }
+
+    componentWillUnmount(): void {
+        super.componentWillUnmount();
+        this.context.eventBus.off("updateSortOrder", this._evtBusSubscribe);
     }
 
     updatePosition(newPosition?: Coordinate) {
@@ -114,6 +139,13 @@ export default class BaseNodeInstance<
             (relativePos?.pos.y || 0) - this.dragDelta.y
         );
         this.updatePosition(newPos);
+        this.bringToFront();
+    }
+
+    shouldComponentUpdate(nextProps: Readonly<T>, nextState: Readonly<Q>, nextContext: any): boolean {
+        const s = super.shouldComponentUpdate(nextProps, nextState, nextContext);
+        this.style.zIndex = nextState.zIndex;
+        return s;
     }
 
     componentDidUpdate({}, prevState: Readonly<Q>): void {
